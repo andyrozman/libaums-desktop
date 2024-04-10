@@ -1,5 +1,18 @@
-libaums
+libaums-usb4java
+=================
+
+This is fork of norani/libaums, which seems to be java predeccessor of magnusja/libaums (this 
+one is much more android specific). 
+
+I removed any android references, since I need this library to work in java on desktop 
+computers. Instead of Android USB Stack, we will be using LibUsb thorugh usb4java project.
+
+
+
+
+
 =======
+
 
 Libaums - Library to access USB Mass Storage Devices  
 License: Apache 2.0 (see license.txt for details)
