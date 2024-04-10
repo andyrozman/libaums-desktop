@@ -23,7 +23,8 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import android.util.Log;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 
@@ -42,6 +43,7 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
  * @author mjahnen
  * 
  */
+@Slf4j
 public class FAT {
 
 	private static final String TAG = FAT.class.getSimpleName();
@@ -75,14 +77,14 @@ public class FAT {
 		if (!bootSector.isFatMirrored()) {
 			int fatNumber = bootSector.getValidFat();
 			fatNumbers = new int[] { fatNumber };
-			Log.i(TAG, "fat is not mirrored, fat " + fatNumber + " is valid");
+			log.info( "fat is not mirrored, fat " + fatNumber + " is valid");
 		} else {
 			int fatCount = bootSector.getFatCount();
 			fatNumbers = new int[fatCount];
 			for (int i = 0; i < fatCount; i++) {
 				fatNumbers[i] = i;
 			}
-			Log.i(TAG, "fat is mirrored, fat count: " + fatCount);
+			log.info( "fat is mirrored, fat count: " + fatCount);
 		}
 
 		fatOffset = new long[fatNumbers.length];
@@ -265,7 +267,7 @@ public class FAT {
 		fsInfoStructure.decreaseClusterCount(originalNumberOfClusters);
 		fsInfoStructure.write();
 
-		Log.i(TAG, "allocating clusters finished");
+		log.info( "allocating clusters finished");
 
 		return result.toArray(new Long[0]);
 	}
@@ -356,7 +358,7 @@ public class FAT {
 			blockDevice.write(lastOffset, buffer);
 		}
 
-		Log.i(TAG, "freed " + numberOfClusters + " clusters");
+		log.info( "freed " + numberOfClusters + " clusters");
 
 		// increase the free cluster count by decreasing with a negative value
 		fsInfoStructure.decreaseClusterCount(-numberOfClusters);

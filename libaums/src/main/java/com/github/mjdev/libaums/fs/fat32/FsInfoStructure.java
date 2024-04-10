@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import android.util.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 
@@ -35,6 +35,7 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
  * @author mjahnen
  * 
  */
+@Slf4j
 /* package */class FsInfoStructure {
 
 	/* package */static int INVALID_VALUE = 0xFFFFFFFF;
@@ -168,7 +169,7 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 	 *             If writing to device fails.
 	 */
 	/* package */void write() throws IOException {
-		Log.d(TAG, "writing to device");
+		log.debug( "writing to device");
 		blockDevice.write(offset, buffer);
 		buffer.clear();
 	}

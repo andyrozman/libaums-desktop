@@ -17,7 +17,7 @@
 
 package com.github.mjdev.libaums.fs;
 
-import android.util.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 /**
  * UsbFileInputStream provides common InputStream access to a UsbFile.
  */
+@Slf4j
 public class UsbFileInputStream extends InputStream {
 
     private static final String TAG = UsbFileInputStream.class.getSimpleName();
@@ -43,7 +44,7 @@ public class UsbFileInputStream extends InputStream {
 
     @Override
     public int available() throws IOException {
-        Log.d(TAG, "available");
+        log.debug( "available");
         // return 0, because we always block
         return 0;
     }

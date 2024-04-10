@@ -17,9 +17,8 @@
 
 package com.github.mjdev.libaums.fs;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -46,7 +45,8 @@ public interface UsbFile extends Closeable {
      * @param path The path to the resource to search.
      * @return UsbFile directory or file if found, null otherwise.
      */
-	@Nullable UsbFile search(@NonNull String path) throws IOException;
+	@Nullable
+	UsbFile search(@Nonnull String path) throws IOException;
 
 	/**
 	 * 

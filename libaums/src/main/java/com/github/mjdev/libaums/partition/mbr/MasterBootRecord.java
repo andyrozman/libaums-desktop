@@ -23,10 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import android.util.Log;
-
 import com.github.mjdev.libaums.partition.PartitionTable;
 import com.github.mjdev.libaums.partition.PartitionTableEntry;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class represents the Master Boot Record (MBR), which is a partition
@@ -35,9 +34,9 @@ import com.github.mjdev.libaums.partition.PartitionTableEntry;
  * @author mjahnen
  * 
  */
+@Slf4j
 public class MasterBootRecord implements PartitionTable {
 
-	private static final String TAG = MasterBootRecord.class.getSimpleName();
 	private static final int TABLE_OFFSET = 446;
 	private static final int TABLE_ENTRY_SIZE = 16;
 
@@ -61,7 +60,7 @@ public class MasterBootRecord implements PartitionTable {
 
 		// test if it is a valid master boot record
 		if (buffer.get(510) != (byte) 0x55 || buffer.get(511) != (byte) 0xaa) {
-			Log.i(TAG, "not a valid mbr partition table!");
+			log.info( "not a valid mbr partition table!");
 			return null;
 		}
 
@@ -72,7 +71,7 @@ public class MasterBootRecord implements PartitionTable {
 			if (partitionType == 0)
 				continue;
 			if (partitionType == 0x05 || partitionType == 0x0f) {
-				Log.w(TAG, "extended partitions are currently unsupported!");
+				log.warn( "extended partitions are currently unsupported!");
 				continue;
 			}
 

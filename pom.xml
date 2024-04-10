@@ -1,0 +1,76 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.atech-software.libaums-desktop</groupId>
+    <name>libaums-desktop-root</name>
+    <artifactId>libaums-desktop-root</artifactId>
+    <version>0.4-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+
+    <dependencies>
+
+
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+
+
+            <!-- slf4j API -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <!-- slf4j over log4j -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-reload4j</artifactId>  <!-- slf4j-log4j12   -->
+                <version>${slf4j.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>ch.qos.reload4j</groupId>
+                        <artifactId>reload4j</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <!--            <version>${lombok.version}</version>-->
+            </dependency>
+
+
+
+
+        </dependencies>
+
+
+
+    </dependencyManagement>
+
+
+
+    <!--
+        <repositories>
+            <repository>
+                <id>The Buzz Media Maven Repository</id>
+                <url>http://maven.thebuzzmedia.com</url>
+            </repository>
+        </repositories>
+     -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <modules>
+        <module>libaums</module>
+    </modules>
+
+
+</project>

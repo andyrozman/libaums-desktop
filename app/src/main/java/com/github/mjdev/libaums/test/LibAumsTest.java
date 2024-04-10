@@ -9,7 +9,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.UsbMassStorageDevice;
 import com.github.mjdev.libaums.fs.FileSystem;
@@ -81,11 +81,11 @@ public class LibAumsTest extends AppCompatActivity {
 
             testSearchAndCreateDirectory();
 
-            Log.d(TAG, "PASS");
+            log.debug( "PASS");
 
         } catch (Exception e) {
             e.printStackTrace();
-            Log.d(TAG, "FAIL");
+            log.debug( "FAIL");
         }
 
     }
@@ -235,7 +235,7 @@ public class LibAumsTest extends AppCompatActivity {
 
         if (usbDevice != null && usbManager.hasPermission(usbDevice)) {
 
-            Log.d(TAG, "received usb device via intent");
+            log.debug( "received usb device via intent");
             // requesting permission is not needed in this case
             setupDevice();
 
@@ -266,7 +266,7 @@ public class LibAumsTest extends AppCompatActivity {
             runAll();
 
         } catch (IOException e) {
-            Log.e(TAG, "error setting up device", e);
+            log.error( "error setting up device", e);
         }
 
     }
@@ -292,7 +292,7 @@ public class LibAumsTest extends AppCompatActivity {
             } else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
                 UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
-                Log.d(TAG, "USB device attached");
+                log.debug( "USB device attached");
 
                 // determine if connected device is a mass storage devuce
                 if (device != null) {
@@ -303,7 +303,7 @@ public class LibAumsTest extends AppCompatActivity {
 
                 UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
-                Log.d(TAG, "USB device detached");
+                log.debug( "USB device detached");
 
                 // determine if connected device is a mass storage devuce
                 if (device != null) {

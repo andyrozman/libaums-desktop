@@ -47,7 +47,7 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import lombok.extern.slf4j.Slf4j;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 			} else if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
 				UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
-				Log.d(TAG, "USB device attached");
+				log.debug( "USB device attached");
 
 				// determine if connected device is a mass storage devuce
 				if (device != null) {
@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 			} else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
 				UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
-				Log.d(TAG, "USB device detached");
+				log.debug( "USB device detached");
 
 				// determine if connected device is a mass storage devuce
 				if (device != null) {
@@ -154,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 						dir.createDirectory(input.getText().toString());
 						activity.adapter.refresh();
 					} catch (Exception e) {
-						Log.e(TAG, "error creating dir!", e);
+						log.error( "error creating dir!", e);
 					}
 
 				}
@@ -214,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 						file.close();
 						activity.adapter.refresh();
 					} catch (Exception e) {
-						Log.e(TAG, "error creating file!", e);
+						log.error( "error creating file!", e);
 					}
 
 				}
@@ -288,9 +288,9 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 				}
 				out.close();
 			} catch (IOException e) {
-				Log.e(TAG, "error copying!", e);
+				log.error( "error copying!", e);
 			}
-			Log.d(TAG, "copy time: " + (System.currentTimeMillis() - time));
+			log.debug( "copy time: " + (System.currentTimeMillis() - time));
 			return null;
 		}
 
@@ -324,14 +324,14 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
     ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            Log.d(TAG, "on service connected " + name);
+            log.debug( "on service connected " + name);
             UsbFileHttpServerService.ServiceBinder binder = (UsbFileHttpServerService.ServiceBinder) service;
             serverService = binder.getService();
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.d(TAG, "on service disconnected " + name);
+            log.debug( "on service disconnected " + name);
             serverService = null;
         }
     };
@@ -388,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 		UsbMassStorageDevice[] devices = UsbMassStorageDevice.getMassStorageDevices(this);
 
 		if (devices.length == 0) {
-			Log.w(TAG, "no device found!");
+			log.warn( "no device found!");
 			android.support.v7.app.ActionBar actionBar = getSupportActionBar();
 			actionBar.setTitle("No device");
 			listView.setAdapter(null);
@@ -401,7 +401,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 		UsbDevice usbDevice = (UsbDevice) getIntent().getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
 		if (usbDevice != null && usbManager.hasPermission(usbDevice)) {
-			Log.d(TAG, "received usb device via intent");
+			log.debug( "received usb device via intent");
 			// requesting permission is not needed in this case
 			setupDevice();
 		} else {
@@ -423,9 +423,9 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
 			// we always use the first partition of the device
 			FileSystem fs = device.getPartitions().get(0).getFileSystem();//use private partition
-			Log.d(TAG, "Capacity: " + fs.getCapacity()+" partition ? ");
-			Log.d(TAG, "Occupied Space: " + fs.getOccupiedSpace());
-			Log.d(TAG, "Free Space: " + fs.getFreeSpace());
+			log.debug( "Capacity: " + fs.getCapacity()+" partition ? ");
+			log.debug( "Occupied Space: " + fs.getOccupiedSpace());
+			log.debug( "Free Space: " + fs.getFreeSpace());
 			UsbFile root = fs.getRootDirectory();
 
 			ActionBar actionBar = getSupportActionBar();
@@ -433,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
 			listView.setAdapter(adapter = new UsbFileListAdapter(this, root));
 		} catch (IOException e) {
-			Log.e(TAG, "error setting up device", e);
+			log.error( "error setting up device", e);
 		}
 
 	}
@@ -500,7 +500,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 				entry.delete();
 				adapter.refresh();
 			} catch (IOException e) {
-				Log.e(TAG, "error deleting!", e);
+				log.error( "error deleting!", e);
 			}
 			return true;
 		case R.id.rename_item:
@@ -518,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 						entry.setName(input.getText().toString());
 						adapter.refresh();
 					} catch (IOException e) {
-						Log.e(TAG, "error renaming!", e);
+						log.error( "error renaming!", e);
 					}
 				}
 
@@ -570,13 +570,13 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 				new CopyTask().execute(param);
 			}
 		} catch (IOException e) {
-			Log.e(TAG, "error staring to copy!", e);
+			log.error( "error staring to copy!", e);
 		}
 	}
 
     private void startHttpServer(final UsbFile file) {
 
-        Log.d(TAG, "starting HTTP server");
+        log.debug( "starting HTTP server");
 
         if(serverService == null) {
             Toast.makeText(MainActivity.this, "serverService == null!", Toast.LENGTH_LONG).show();
@@ -584,7 +584,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         }
 
         if(serverService.isServerRunning()) {
-            Log.d(TAG, "Stopping existing server service");
+            log.debug( "Stopping existing server service");
             serverService.stopServer();
         }
 
@@ -593,7 +593,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
             serverService.startServer(file);
             Toast.makeText(MainActivity.this, "HTTP server up and running", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
-            Log.e(TAG, "Error starting HTTP server", e);
+            log.error( "Error starting HTTP server", e);
             Toast.makeText(MainActivity.this, "Could not start HTTP server", Toast.LENGTH_LONG).show();
         }
 
@@ -638,7 +638,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
 			adapter.refresh();
 		} catch (IOException e) {
-			Log.e(TAG, "error creating big file!", e);
+			log.error( "error creating big file!", e);
 		}
 	}
 
@@ -653,7 +653,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 			file.moveTo(adapter.getCurrentDir());
 			adapter.refresh();
 		} catch (IOException e) {
-			Log.e(TAG, "error moving!", e);
+			log.error( "error moving!", e);
 		}
 		cl.setFile(null);
 	}
@@ -666,7 +666,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 		} catch (NoSuchElementException e) {
 			super.onBackPressed();
 		} catch (IOException e) {
-			Log.e(TAG, "error initializing adapter!", e);
+			log.error( "error initializing adapter!", e);
 		}
 	}
 
@@ -676,11 +676,11 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 		unregisterReceiver(usbReceiver);
 
         if(!serverService.isServerRunning()) {
-            Log.d(TAG, "Stopping service");
+            log.debug( "Stopping service");
             stopService(serviceIntent);
 
             if (device != null) {
-                Log.d(TAG, "Closing device");
+                log.debug( "Closing device");
 
                 device.close();
             }

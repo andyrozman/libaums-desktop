@@ -20,7 +20,8 @@ package com.github.mjdev.libaums.driver.scsi.commands;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import android.util.Log;
+import lombok.extern.slf4j.Slf4j;
+
 
 /**
  * This class represents the command status wrapper (CSW) in the SCSI
@@ -30,6 +31,7 @@ import android.util.Log;
  * @author mjahnen
  * 
  */
+@Slf4j
 public class CommandStatusWrapper {
 
 	/**
@@ -76,7 +78,7 @@ public class CommandStatusWrapper {
 		CommandStatusWrapper csw = new CommandStatusWrapper();
 		csw.dCswSignature = buffer.getInt();
 		if (csw.dCswSignature != D_CSW_SIGNATURE) {
-			Log.e(TAG, "unexpected dCSWSignature " + csw.dCswSignature);
+			log.error( "unexpected dCSWSignature " + csw.dCswSignature);
 		}
 		csw.dCswTag = buffer.getInt();
 		csw.dCswDataResidue = buffer.getInt();

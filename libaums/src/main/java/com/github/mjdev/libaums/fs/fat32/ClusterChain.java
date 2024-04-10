@@ -20,7 +20,7 @@ package com.github.mjdev.libaums.fs.fat32;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import android.util.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 
@@ -33,6 +33,7 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
  * @author mjahnen
  * 
  */
+@Slf4j
 public class ClusterChain {
 
 	private static final String TAG = ClusterChain.class.getSimpleName();
@@ -195,10 +196,10 @@ public class ClusterChain {
 			return;
 
 		if (newNumberOfClusters > oldNumberOfClusters) {
-			Log.d(TAG, "grow chain");
+			log.debug( "grow chain");
 			chain = fat.alloc(chain, newNumberOfClusters - oldNumberOfClusters);
 		} else {
-			Log.d(TAG, "shrink chain");
+			log.debug( "shrink chain");
 			chain = fat.free(chain, oldNumberOfClusters - newNumberOfClusters);
 		}
 	}

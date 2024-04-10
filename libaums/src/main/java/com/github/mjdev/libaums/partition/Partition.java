@@ -20,11 +20,10 @@ package com.github.mjdev.libaums.partition;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import android.util.Log;
-
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 import com.github.mjdev.libaums.fs.FileSystem;
 import com.github.mjdev.libaums.fs.FileSystemFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class represents a partition on an mass storage device. A partition has
@@ -39,6 +38,7 @@ import com.github.mjdev.libaums.fs.FileSystemFactory;
  * @author mjahnen
  * 
  */
+@Slf4j
 public class Partition implements BlockDeviceDriver {
 
 	private static final String TAG = Partition.class.getSimpleName();
@@ -85,7 +85,7 @@ public class Partition implements BlockDeviceDriver {
 			partition.blockSize = blockDevice.getBlockSize();
 			partition.fileSystem = FileSystemFactory.createFileSystem(entry, partition);
 		} else {
-			Log.w(TAG, "unsupported partition type: " + entry.getPartitionType());//=11
+			log.warn( "unsupported partition type: " + entry.getPartitionType());//=11
 		}
 
 		return partition;
@@ -122,7 +122,7 @@ public class Partition implements BlockDeviceDriver {
 		// TODO try to make this more efficient by for example making tmp buffer
 		// global
 		if (offset % blockSize != 0) {
-			Log.w(TAG, "device offset not a multiple of block size");
+			log.warn( "device offset not a multiple of block size");
 			ByteBuffer tmp = ByteBuffer.allocate(blockSize);
 
 			blockDevice.read(devOffset, tmp);
@@ -143,7 +143,7 @@ public class Partition implements BlockDeviceDriver {
 		// TODO try to make this more efficient by for example making tmp buffer
 		// global
 		if (offset % blockSize != 0) {
-			Log.w(TAG, "device offset not a multiple of block size");
+			log.warn( "device offset not a multiple of block size");
 			ByteBuffer tmp = ByteBuffer.allocate(blockSize);
 
 			blockDevice.read(devOffset, tmp);

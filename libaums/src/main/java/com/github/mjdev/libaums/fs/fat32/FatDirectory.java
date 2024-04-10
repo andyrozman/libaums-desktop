@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import android.util.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 import com.github.mjdev.libaums.fs.UsbFile;
@@ -38,6 +38,7 @@ import com.github.mjdev.libaums.fs.UsbFile;
  * @author mjahnen
  * 
  */
+@Slf4j
 public class FatDirectory implements UsbFile {
 
 	private static String TAG = FatDirectory.class.getSimpleName();
@@ -194,15 +195,15 @@ public class FatDirectory implements UsbFile {
 
 			if (e.isVolumeLabel()) {
 				if (!isRoot()) {
-					Log.w(TAG, "volume label in non root dir!");
+					log.warn( "volume label in non root dir!");
 				}
 				volumeLabel = e.getVolumeLabel();
-				Log.d(TAG, "volume label: " + volumeLabel);
+				log.debug( "volume label: " + volumeLabel);
 				continue;
 			}
 
 			if (e.isHidden()) {
-				Log.d(TAG, "hidden "+e.isHidden() );
+				log.debug( "hidden "+e.isHidden() );
 				continue;
 			}
 
@@ -355,7 +356,7 @@ public class FatDirectory implements UsbFile {
 		long newStartCluster = fat.alloc(new Long[0], 1)[0];
 		entry.setStartCluster(newStartCluster);
 
-		Log.d(TAG, "adding entry: " + entry + " with short name: " + shortName);
+		log.debug( "adding entry: " + entry + " with short name: " + shortName);
 		addEntry(entry, entry.getActualEntry());
 		// write changes immediately to disk
 		write();
@@ -378,7 +379,7 @@ public class FatDirectory implements UsbFile {
 		long newStartCluster = fat.alloc(new Long[0], 1)[0];
 		entry.setStartCluster(newStartCluster);
 
-		Log.d(TAG, "adding entry: " + entry + " with short name: " + shortName);
+		log.debug( "adding entry: " + entry + " with short name: " + shortName);
 		addEntry(entry, entry.getActualEntry());
 		// write changes immediately to disk
 		write();
@@ -422,13 +423,13 @@ public class FatDirectory implements UsbFile {
 
 	@Override
 	public UsbFile search(String path) throws IOException {
-        Log.d(TAG, "search file: " + path);
+        log.debug( "search file: " + path);
         init();
 
         int index = path.indexOf(UsbFile.separator);
 
         if(index < 0) {
-            Log.d(TAG, "search entry: " + path);
+            log.debug( "search entry: " + path);
 
             FatLfnDirectoryEntry entry = findEntry(path);
             if(entry != null) {
@@ -441,18 +442,18 @@ public class FatDirectory implements UsbFile {
         } else {
             String subPath = path.substring(index + 1);
             String dirName = path.substring(0, index);
-            Log.d(TAG, "search recursively " + subPath + " in " + dirName);
+            log.debug( "search recursively " + subPath + " in " + dirName);
 
             for(FatLfnDirectoryEntry entry : entries) {
                 if(entry.isDirectory() && entry.getName().equals(dirName)) {
-                    Log.d(TAG, "found " + dirName);
+                    log.debug( "found " + dirName);
                     FatDirectory dir = FatDirectory.create(entry, blockDevice, fat, bootSector, this);
                     return dir.search(subPath);
                 }
             }
         }
 
-        Log.d(TAG, "not found " + path);
+        log.debug( "not found " + path);
 
         return null;
 	}
