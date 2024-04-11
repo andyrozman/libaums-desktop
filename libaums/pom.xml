@@ -1,14 +1,16 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.atech-software.libaums-desktop</groupId>
-        <artifactId>libaums-desktop-root</artifactId>
-        <version>0.4-SNAPSHOT</version>
+        <groupId>com.atech-software.libaums-usb4java</groupId>
+        <artifactId>libaums-usb4java-root</artifactId>
+        <version>0.4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <name>libaums-usb4java</name>
+    <artifactId>libaums-usb4java</artifactId>
+    <description>USB mass storage library for access via SCSI.</description>
 
-    <name>libaums-desktop</name>
     <build>
         <plugins>
             <plugin>
@@ -21,18 +23,22 @@
             </plugin>
         </plugins>
     </build>
-    <artifactId>libaums-desktop</artifactId>
 
+
+    <scm>
+        <connection>scm:git:https://github.com/andyrozman/libaums-usb4java.git</connection>
+        <developerConnection>scm:git:https://github.com/andyrozman/libaums-usb4java.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <dependencies>
 
+        <!-- USB4Java -->
         <dependency>
             <groupId>org.usb4java</groupId>
             <artifactId>usb4java-javax</artifactId>
             <version>1.3.0</version>
         </dependency>
-
-
 
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -48,8 +54,7 @@
         </dependency>
 
 
-
-
+        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -61,11 +66,17 @@
             <artifactId>slf4j-reload4j</artifactId>  <!-- slf4j-log4j12   -->
         </dependency>
 
+
+
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
         </dependency>
+
+
+        <!-- JUnit -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -91,6 +102,35 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
+
+
+    <developers>
+        <developer>
+            <id>mjdev</id>
+            <name>Magnus Jahnen</name>
+            <email>jahnen@in.tum.de</email>
+            <properties>
+                <description>The library was developed by Mr. Jahnen as part of his bachelor's thesis in 2014</description>
+            </properties>
+        </developer>
+
+        <developer>
+            <id>andyrozman</id>
+            <name>Andy Rozman</name>
+            <email>andy.rozman@gmail.com</email>
+            <properties>
+                <description>Modifications for library to be used with Desktop computers and with usb4java (libusb)</description>
+            </properties>
+        </developer>
+    </developers>
+
+
+
+
+<!--    licenseName = 'The Apache Software License, Version 2.0'-->
+<!--    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'-->
+<!--    allLicenses = ["Apache-2.0"]-->
+<!--    }-->
 
 
 </project>
