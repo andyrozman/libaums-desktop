@@ -31,19 +31,20 @@ import java.util.List;
 //import android.hardware.usb.UsbInterface;
 //import android.hardware.usb.UsbManager;
 //import android.os.Build;
+import com.atech.library.usb.libaums.UsbConstants;
+import com.atech.library.usb.libaums.UsbManagement;
+import com.atech.library.usb.libaums.device.ATUsbDevice;
+import com.atech.library.usb.libaums.device.ATUsbEndpointDescriptor;
+import com.atech.library.usb.libaums.device.ATUsbInterface;
+import com.atech.library.usb.libaums.device.ATUsbInterfaceDescriptor;
 import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
-import com.github.mjdev.libaums.driver.BlockDeviceDriverFactory;
 import com.github.mjdev.libaums.partition.Partition;
 import com.github.mjdev.libaums.partition.PartitionTable;
 import com.github.mjdev.libaums.partition.PartitionTableEntry;
-import com.github.mjdev.libaums.partition.PartitionTableFactory;
 
-import javax.usb.UsbDevice;
-import javax.usb.UsbEndpoint;
-import javax.usb.UsbHostManager;
-import javax.usb.UsbInterface;
+import javax.usb.*;
 
 /**
  * Class representing a connected USB mass storage device. You can enumerate
@@ -201,66 +202,84 @@ public class UsbMassStorageDevice {
 	 * @return An array of suitable mass storage devices or an empty array if
 	 *         none could be found.
 	 */
-	public static UsbMassStorageDevice[] getMassStorageDevices(/*Context context*/) {
-//		UsbManager usbManager = (UsbManager) context.getSystemService(Context.USB_SERVICE);
-//		ArrayList<UsbMassStorageDevice> result = new ArrayList<UsbMassStorageDevice>();
-//
-//
-//
-//		for (UsbDevice device : usbManager.getDeviceList().values()) {
-//			log.info( "found usb device: " + device);
-//
-//			int interfaceCount = device.getInterfaceCount();
-//			for (int i = 0; i < interfaceCount; i++) {
-//				UsbInterface usbInterface = device.getInterface(0);//read mass storage not HID interface. HID interface is 1
-//				log.info( "found usb interface: " + usbInterface);
-//
-//				// we currently only support SCSI transparent command set with
-//				// bulk transfers only!
-//				if (usbInterface.getInterfaceClass() != UsbConstants.USB_CLASS_MASS_STORAGE
-//						||
-//						usbInterface.getInterfaceSubclass() != INTERFACE_SUBCLASS
-//						|| usbInterface.getInterfaceProtocol() != INTERFACE_PROTOCOL) {
-//					log.info( "device interface not suitable!"+usbInterface.getInterfaceClass());
-//					continue;
-//				}
-//
-//				// Every mass storage device has exactly two endpoints
-//				// One IN and one OUT endpoint
-//				int endpointCount = usbInterface.getEndpointCount();
-//				if (endpointCount != 2) {
-//					log.warn( "interface endpoint count != 2");
-//				}
-//
-//				UsbEndpoint outEndpoint = null;
-//				UsbEndpoint inEndpoint = null;
-//				for (int j = 0; j < endpointCount; j++) {
-//					UsbEndpoint endpoint = usbInterface.getEndpoint(j);
-//					log.info( "found usb endpoint: " + endpoint);
-//					if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
-//						if (endpoint.getDirection() == UsbConstants.USB_DIR_OUT) {
-//						    outEndpoint = endpoint;
-//						} else {
-//						    inEndpoint = endpoint;
-//						}
-//					}
-//				}
-//
-//				if (outEndpoint == null || inEndpoint == null) {
-//					log.error( "Not all needed endpoints found!");
-//					continue;
-//				}
-//
+	public static UsbMassStorageDevice[] getMassStorageDevices() throws UsbException {
+		ArrayList<UsbMassStorageDevice> result = new ArrayList<UsbMassStorageDevice>();
+
+		//List<ATUsbDevice> devices = new ArrayList<>();
+
+		List<ATUsbDevice> deviceList = UsbManagement.getDeviceList();
+
+
+		for (ATUsbDevice device : deviceList) {
+			log.info( "found usb device: " + device);
+
+			//device.getUsbDeviceDescriptor().
+
+			int interfaceCount = device.getInterfaceCount();
+			//for (int i = 0; i < interfaceCount; i++) {
+				ATUsbInterface usbInterfaceRoot = device.getInterface(0); //read mass storage not HID interface. HID interface is 1
+				log.info( "found usb interface: " + usbInterfaceRoot);
+
+				for (ATUsbInterfaceDescriptor usbInterface : usbInterfaceRoot.altsettings()) {
+
+					// we currently only support SCSI transparent command set with
+					// bulk transfers only!
+					if (usbInterface.bInterfaceClass() != UsbConstants.USB_CLASS_MASS_STORAGE
+							||
+							usbInterface.bInterfaceSubClass() != INTERFACE_SUBCLASS
+							|| usbInterface.bInterfaceProtocol() != INTERFACE_PROTOCOL) {
+						log.info("Device interface not suitable ! Found class={},subclass={},protocol={}), required=8/6/80 (Mass Storage/SCSI/Bulk-Only)", usbInterface.bInterfaceClass(), usbInterface.bInterfaceSubClass(), usbInterface.bInterfaceProtocol());
+						continue;
+					}
+
+					// Every mass storage device has exactly two endpoints
+					// One IN and one OUT endpoint
+					int endpointCount = usbInterface.bNumEndpoints();
+					if (endpointCount != 2) {
+						log.warn( "interface endpoint count != 2");
+					}
+
+					ATUsbEndpointDescriptor outEndpoint = null;
+					ATUsbEndpointDescriptor inEndpoint = null;
+					for (int j = 0; j < endpointCount; j++) {
+						ATUsbEndpointDescriptor endpoint = usbInterface.getEndpoint(j);
+						log.info( "found usb endpoint: " + endpoint);
+						if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+							if (endpoint.getDirection() == UsbConstants.USB_DIR_OUT) {
+								outEndpoint = endpoint;
+							} else {
+								inEndpoint = endpoint;
+							}
+						}
+					}
+
+					if (outEndpoint == null || inEndpoint == null) {
+						log.error( "Not all needed endpoints found!");
+						continue;
+					}
+
+					// TODO put on list determine how
+//					result.add(new UsbMassStorageDevice(/*usbManager,*/ device, usbInterface, inEndpoint,
+//							outEndpoint));
+				}
+
+
+
+
 //				result.add(new UsbMassStorageDevice(usbManager, device, usbInterface, inEndpoint,
 //						outEndpoint));
-//
-//			}
-//		}
+
+			}
+		//}
 //
 //		return result.toArray(new UsbMassStorageDevice[0]);
-		return null;
 
+		return null;
 	}
+
+
+
+
 
 	/**
 	 * Initializes the mass storage device and determines different things like

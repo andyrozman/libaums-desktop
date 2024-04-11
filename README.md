@@ -22,6 +22,20 @@ compile 'com.github.mjdev:libaums:0.3'
 ```
 There are plenty examples inside the project how to use usb4java (copied from usb4java samples), and I will add some examples on how to use library itself, as soon as I am so far.
 
+### How to use (2)
+
+I added special class where you can configure what part of library you need, so you can load Block Device and/or you can load Partitions. By default we load booth, but this can be changed like this:
+
+```java
+// turn off partition loading
+UsbMassStorageLibrarySettings.LOAD_PARTITIONS = false;
+// turn off block device loading
+UsbMassStorageLibrarySettings.LOAD_PARTITIONS = false;
+```
+
+
+
+
 ### Status
 
 Just started on this project in April 2024, and it will take me some time to get it to working state. 

@@ -1,0 +1,11 @@
+
+CHANGELOG
+=========
+
+0.4.0 [10.4.2024]
+- initial import from https://github.com/norani/libaums-develop
+- added sl4j logging, removing all android logging
+- added usb4java and examples from it
+
+
+

@@ -1,6 +1,8 @@
 package com.atech.library.usb.libaums.device;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
+import org.apache.commons.lang3.StringUtils;
 import org.usb4java.DeviceDescriptor;
 import org.usb4java.DeviceHandle;
 import org.usb4java.LibUsb;
@@ -10,7 +12,8 @@ import java.util.List;
  * Created by andy on 10.04.2024.
  */
 @Data
-public class UsbDeviceDescriptor {
+@Accessors(fluent = true)
+public class ATUsbDeviceDescriptor implements javax.usb.UsbDeviceDescriptor {
 
     byte bLength;
     byte bDescriptorType;
@@ -32,7 +35,7 @@ public class UsbDeviceDescriptor {
     byte bNumConfigurations;
 
     String description;
-    List<UsbConfigurationDescriptor> configurationDescriptors;
+    List<ATUsbConfigurationDescriptor> configurationDescriptors;
 
     public String getVendorHex() {
         return String.format("%04x", idVendor);
@@ -66,5 +69,21 @@ public class UsbDeviceDescriptor {
         this.product = LibUsb.getStringDescriptor(handle, descriptor.iProduct());
         this.serialNumber = LibUsb.getStringDescriptor(handle, descriptor.iSerialNumber());
         //this.vendor = LibUsb.getStringDescriptor(handle, descriptor.idVendor());
+
+        //descriptor.
+
+
+
     }
+
+
+    public String toLsUsbString(int pad) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(StringUtils.repeat(" ", pad+2) + description);
+        for (ATUsbConfigurationDescriptor configurationDescriptor : configurationDescriptors) {
+            stringBuilder.append(StringUtils.repeat(" ", pad+2) + configurationDescriptor.toLsUsbString(pad+2));
+        }
+        return stringBuilder.toString();
+    }
+
 }

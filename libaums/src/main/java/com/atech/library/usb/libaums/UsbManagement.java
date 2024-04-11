@@ -1,8 +1,8 @@
 package com.atech.library.usb.libaums;
 
-import com.atech.library.usb.libaums.device.UsbConfigurationDescriptor;
-import com.atech.library.usb.libaums.device.UsbDevice;
-import com.atech.library.usb.libaums.device.UsbDeviceDescriptor;
+import com.atech.library.usb.libaums.device.ATUsbConfigurationDescriptor;
+import com.atech.library.usb.libaums.device.ATUsbDevice;
+import com.atech.library.usb.libaums.device.ATUsbDeviceDescriptor;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.usb4java.*;
@@ -14,17 +14,17 @@ import java.util.*;
  */
 public class UsbManagement {
 
-    public List<UsbDevice> getFullDeviceList() {
+    public static List<ATUsbDevice> getFullDeviceList() {
         return getFullDeviceList(null);
     }
 
 
-    public List<UsbDevice> getDeviceList() {
+    public static List<ATUsbDevice> getDeviceList() {
         return getFullDeviceList(9); // 9 = Hubs
     }
 
 
-    public List<UsbDevice> getFullDeviceList(int...excludeClass) {
+    public static List<ATUsbDevice> getFullDeviceList(int...excludeClass) {
         // Create the libusb context
         Context context = new Context();
 
@@ -35,7 +35,7 @@ public class UsbManagement {
             excludesForClass.add(aClass);
         }
 
-        List<UsbDevice> outList = new ArrayList<>();
+        List<ATUsbDevice> outList = new ArrayList<>();
 
         // Initialize the libusb context
         int result = LibUsb.init(context);
@@ -57,7 +57,7 @@ public class UsbManagement {
             // Iterate over all devices and list them
             for (Device device: list)
             {
-                UsbDevice usbDevice = getDevice(device, false, null, excludesForClass);
+                ATUsbDevice usbDevice = getDevice(device, true, null, excludesForClass);
 
 //
 //                UsbDevice usbDevice = new UsbDevice();
@@ -116,11 +116,11 @@ public class UsbManagement {
 
     }
 
-    public UsbDevice getDevice(Device device, boolean details, DeviceHandle handle, Set<Integer> excludesForClass) {
+    public static ATUsbDevice getDevice(Device device, boolean details, DeviceHandle handle, Set<Integer> excludesForClass) {
 
-        UsbDevice usbDevice = new UsbDevice();
-        usbDevice.setAddress(LibUsb.getDeviceAddress(device));
-        usbDevice.setBusNumber(LibUsb.getBusNumber(device));
+        ATUsbDevice usbDevice = new ATUsbDevice();
+        usbDevice.address(LibUsb.getDeviceAddress(device));
+        usbDevice.busNumber(LibUsb.getBusNumber(device));
         DeviceDescriptor descriptor = new DeviceDescriptor();
         int result = LibUsb.getDeviceDescriptor(device, descriptor);
         if (result < 0)
@@ -133,7 +133,7 @@ public class UsbManagement {
             return null;
         }
 
-        UsbDeviceDescriptor deviceDescriptor = new UsbDeviceDescriptor();
+        ATUsbDeviceDescriptor deviceDescriptor = new ATUsbDeviceDescriptor();
         deviceDescriptor.loadData(descriptor);
 
         if (handle == null) {
@@ -156,7 +156,7 @@ public class UsbManagement {
             int portNumber = LibUsb.getPortNumber(device);
             if (portNumber != 0) {
                 System.out.println("Connected to port: " + portNumber);
-                usbDevice.setPortNumber(portNumber);
+                usbDevice.portNumber(portNumber);
             }
 
             // Dump parent device if available
@@ -171,30 +171,29 @@ public class UsbManagement {
 
             // Dump the device speed
             int speed = LibUsb.getDeviceSpeed(device);
-            usbDevice.setISpeed(speed);
-            usbDevice.setSpeed(DescriptorUtils.getSpeedName(speed));
-            System.out.println("Speed: "
-                    + usbDevice.getSpeed());
+            usbDevice.speed(speed);
+            usbDevice.speedString(DescriptorUtils.getSpeedName(speed));
+            System.out.println("Speed: " + usbDevice.getSpeed());
 
-            deviceDescriptor.setConfigurationDescriptors(
-                    getConfigurationDescriptors(device, usbDevice.getDescriptor().getBNumConfigurations(), handle));
+            deviceDescriptor.configurationDescriptors(
+                    getConfigurationDescriptors(device, deviceDescriptor.bNumConfigurations(), handle));
 
         }
 
-        usbDevice.setDescriptor(deviceDescriptor);
+        usbDevice.descriptor(deviceDescriptor);
         System.out.format(
                 "Bus %03d, Device %03d: Vendor %04x, Product %04x%n",
-                usbDevice.getBusNumber(), usbDevice.getAddress(), descriptor.idVendor(),
+                usbDevice.busNumber(), usbDevice.address(), descriptor.idVendor(),
                 descriptor.idProduct());
 
         return usbDevice;
     }
 
-    public static List<UsbConfigurationDescriptor> getConfigurationDescriptors(final Device device,
-                                                    final int numConfigurations,
-                                                   DeviceHandle handle)
+    public static List<ATUsbConfigurationDescriptor> getConfigurationDescriptors(final Device device,
+                                                                                 final int numConfigurations,
+                                                                                 DeviceHandle handle)
     {
-        List<UsbConfigurationDescriptor> list = new ArrayList<>();
+        List<ATUsbConfigurationDescriptor> list = new ArrayList<>();
         for (byte i = 0; i < numConfigurations; i += 1)
         {
             final ConfigDescriptor descriptor = new ConfigDescriptor();
@@ -208,7 +207,7 @@ public class UsbManagement {
             {
                 System.out.println(descriptor.dump().replaceAll("(?m)^",
                         "  "));
-                UsbConfigurationDescriptor usbConfigDescriptor = new UsbConfigurationDescriptor();
+                ATUsbConfigurationDescriptor usbConfigDescriptor = new ATUsbConfigurationDescriptor();
                 usbConfigDescriptor.loadData(descriptor);
 
                 list.add(usbConfigDescriptor);
@@ -265,16 +264,17 @@ public class UsbManagement {
 
         UsbManagement usbManagement = new UsbManagement();
 
-        List<UsbDevice> fullDeviceList = usbManagement.getDeviceList();
+        List<ATUsbDevice> fullDeviceList = usbManagement.getDeviceList();
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        System.out.println(gson.toJson(fullDeviceList));
+        //System.out.println(gson.toJson(fullDeviceList));
 
+        System.out.println("test output: ==================================================");
 
-        for (UsbDevice usbDevice : fullDeviceList) {
+        ATUsbDevice atUsbDevice = fullDeviceList.get(0);
 
-        }
+        System.out.println(atUsbDevice.toLsUsbString());
 
     }
 

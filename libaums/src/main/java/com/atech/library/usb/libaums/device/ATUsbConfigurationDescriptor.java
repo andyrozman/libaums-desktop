@@ -1,17 +1,20 @@
 package com.atech.library.usb.libaums.device;
 
 import lombok.Data;
+import lombok.experimental.Accessors;
 import org.usb4java.ConfigDescriptor;
-import org.usb4java.DescriptorUtils;
 import org.usb4java.Interface;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by andy on 10.04.2024.
  */
 @Data
-public class UsbConfigurationDescriptor {
+@Accessors(fluent = true)
+public class ATUsbConfigurationDescriptor implements javax.usb.UsbConfigurationDescriptor {
 
     byte bLength;
 
@@ -30,10 +33,13 @@ public class UsbConfigurationDescriptor {
     byte bMaxPower;
 
     //public native Interface[] iface();
+    List<ATUsbInterface> interfaces;
 
     ByteBuffer extra;
 
     int extraLength;
+
+    String description;
 
     public void loadData(ConfigDescriptor descriptor) {
         bLength = descriptor.bLength();
@@ -45,31 +51,28 @@ public class UsbConfigurationDescriptor {
         bmAttributes = descriptor.bmAttributes();
         bMaxPower =  descriptor.bMaxPower();
 
+        description = descriptor.dump();
+
         Interface[] iface = descriptor.iface();
+        interfaces = new ArrayList<>();
 
         for (Interface anInterface : iface) {
-
+            ATUsbInterface atUsbInterfaceDescriptor = new ATUsbInterface();
+            atUsbInterfaceDescriptor.loadData(anInterface);
+            interfaces.add(atUsbInterfaceDescriptor);
         }
-
-
-        //public native Interface[] iface();
 
         extra = descriptor.extra();
         extraLength = descriptor.extraLength();
-
     }
 
-
-
-
-//    bLength                 9
-//    bDescriptorType         2
-//    wTotalLength       0x0020
-//    bNumInterfaces          1
-//    bConfigurationValue     1
-//    iConfiguration          5 Mass Storage Device
-//    bmAttributes         0xc0
-//    Self Powered
-//    MaxPower              100mA
+    public String toLsUsbString(int pad) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(description);
+        for (ATUsbInterface anInterface : interfaces) {
+            stringBuilder.append(anInterface.toLsUsbString(0));
+        }
+        return stringBuilder.toString();
+    }
 
 }
