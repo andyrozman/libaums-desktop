@@ -1,3 +1,7 @@
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andyrozman/libaums-usb4java/maven.yml)
+[![Release](https://jitpack.io/v/com.atech-software/atech-tools.svg)](https://jitpack.io/#com.atech-software/libaums-usb4java)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 # libaums-usb4java - Library to access USB Mass Storage Devices (through LibUsb api via usb4java project)
 
 
@@ -43,8 +47,8 @@ Just started on this project in April 2024, and it will take me some time to get
 
 
 
-=======
-Original README from 
+
+### Original README 
 
 Libaums - Library to access USB Mass Storage Devices  
 License: Apache 2.0 (see license.txt for details)
