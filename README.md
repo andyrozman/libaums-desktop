@@ -1,5 +1,5 @@
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andyrozman/libaums-usb4java/maven.yml)
-[![Release](https://jitpack.io/v/com.atech-software/atech-tools.svg)](https://jitpack.io/#com.atech-software/libaums-usb4java)
+[![](https://jitpack.io/v/com.atech-software/libaums-usb4java.svg)](https://jitpack.io/#com.atech-software/libaums-usb4java)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # libaums-usb4java - Library to access USB Mass Storage Devices (through LibUsb api via usb4java project)
@@ -19,10 +19,21 @@ You can find original disclaimer little bit down the page. My contribution is so
 
 ### How to use
 
-The library can be included into your project like this: NOT AVAILABLE YET
+The library can be included into your project like this: 
 
 ```
-compile 'com.github.mjdev:libaums:0.3'
+  <repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+
+	<dependency>
+	    <groupId>com.atech-software</groupId>
+	    <artifactId>libaums-usb4java</artifactId>
+	    <version>Tag</version>
+	</dependency>
 ```
 There are plenty examples inside the project how to use usb4java (copied from usb4java samples), and I will add some examples on how to use library itself, as soon as I am so far.
 
