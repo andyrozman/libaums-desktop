@@ -57,7 +57,7 @@ public class UsbDeviceCommunication implements UsbCommunication {
         buffer.put(data, 0, length);
         //put(byte[] src, int offset, int length)
         IntBuffer transferred = BufferUtils.allocateIntBuffer();
-        int result = LibUsb.bulkTransfer(handle, deviceSettings.getOutEndpoint(), buffer,
+        int result = LibUsb.bulkTransfer(handle, deviceSettings.getOutEndpointAddress(), buffer,
                 transferred, TIMEOUT);
         if (result != LibUsb.SUCCESS)
         {
@@ -84,7 +84,7 @@ public class UsbDeviceCommunication implements UsbCommunication {
         ByteBuffer buffer = BufferUtils.allocateByteBuffer(length).order(
                 ByteOrder.LITTLE_ENDIAN);
         IntBuffer transferred = BufferUtils.allocateIntBuffer();
-        int result = LibUsb.bulkTransfer(handle, deviceSettings.getInEndpoint(), buffer,
+        int result = LibUsb.bulkTransfer(handle, deviceSettings.getInEndpointAddress(), buffer,
                 transferred, TIMEOUT);
         if (result != LibUsb.SUCCESS)
         {

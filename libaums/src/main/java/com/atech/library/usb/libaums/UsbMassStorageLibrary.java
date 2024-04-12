@@ -38,8 +38,9 @@ public class UsbMassStorageLibrary {
         if (libraryInitialized) {
             // Deinitialize the libusb context
             LibUsb.exit(context);
+            libraryInitialized = false;
+            context = null;
         }
     }
-
 
 }

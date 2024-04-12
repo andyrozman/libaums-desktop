@@ -18,6 +18,8 @@
 
 package com.github.mjdev.libaums.fs;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
+
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,10 +44,15 @@ public class UsbFileOutputStream extends OutputStream {
 
     @Override
     public void write(int oneByte) throws IOException {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[] {(byte) oneByte});
-        file.write(currentByteOffset, byteBuffer);
+        try {
+            ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[] {(byte) oneByte});
+            file.write(currentByteOffset, byteBuffer);
 
-        currentByteOffset++;
+            currentByteOffset++;
+        } catch (LibAumsException e) {
+            throw (IOException)e.getCause();
+        }
+
     }
 
     @Override
@@ -55,26 +62,40 @@ public class UsbFileOutputStream extends OutputStream {
 
     @Override
     public void flush() throws IOException {
-        file.flush();
+        try {
+            file.flush();
+        } catch (LibAumsException e) {
+            throw (IOException)e.getCause();
+        }
     }
 
     @Override
     public void write(byte[] buffer) throws IOException {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
-        file.write(currentByteOffset, byteBuffer);
+        try {
+            ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+            file.write(currentByteOffset, byteBuffer);
 
-        currentByteOffset += buffer.length;
+            currentByteOffset += buffer.length;
+        } catch (LibAumsException e) {
+            throw (IOException)e.getCause();
+        }
+
     }
 
     @Override
     public void write(byte[] buffer, int offset, int count) throws IOException {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+        try {
+            ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
 
-        byteBuffer.position(offset);
-        byteBuffer.limit(count + offset);
+            byteBuffer.position(offset);
+            byteBuffer.limit(count + offset);
 
-        file.write(currentByteOffset, byteBuffer);
+            file.write(currentByteOffset, byteBuffer);
 
-        currentByteOffset += count;
+            currentByteOffset += count;
+        } catch (LibAumsException e) {
+            throw (IOException)e.getCause();
+        }
+
     }
 }

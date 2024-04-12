@@ -69,11 +69,25 @@ UsbMassStorageDevice device = UsbMassStorageDevice.getMassStorageDevice(config);
 Once we have instance we need to initialize device, which will open device and claim its interface:
 
 ```java
-// see previous step 
+// see previous step we have instance of UsbMassStorageDevice called device
 device.init();
 ```
 
+After device is initialized we can work with it get partitions, get blockDevice:
 
+
+
+When we are done with specific device we need to close it:
+
+```java
+device.close();
+```
+
+When we are done with library we need to call this, to dispose of LibUsb instance (instance is created automatically, but needs to be disposed manually):
+
+```java
+UsbMassStorageLibrary.
+```
 
 
 ### Status

@@ -17,6 +17,7 @@
 
 package com.github.mjdev.libaums.fs;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -29,7 +30,6 @@ import java.nio.ByteBuffer;
 @Slf4j
 public class UsbFileInputStream extends InputStream {
 
-    private static final String TAG = UsbFileInputStream.class.getSimpleName();
     private UsbFile file;
     private int currentByteOffset = 0;
 
@@ -52,16 +52,21 @@ public class UsbFileInputStream extends InputStream {
     @Override
     public int read() throws IOException {
 
-        if(currentByteOffset >= file.getLength()) {
-            return -1;
-        }
+        try {
+            if(currentByteOffset >= file.getLength()) {
+                return -1;
+            }
 
-        ByteBuffer buffer = ByteBuffer.allocate(512);
-        buffer.limit(1);
-        file.read(currentByteOffset, buffer);
-        currentByteOffset++;
-        buffer.flip();
-        return buffer.get();
+            ByteBuffer buffer = ByteBuffer.allocate(512);
+            buffer.limit(1);
+            file.read(currentByteOffset, buffer);
+            currentByteOffset++;
+            buffer.flip();
+            return buffer.get();
+
+        } catch (LibAumsException e) {
+            throw (IOException)e.getCause();
+        }
     }
 
     @Override
@@ -72,40 +77,49 @@ public class UsbFileInputStream extends InputStream {
     @Override
     public int read(byte[] buffer) throws IOException {
 
-        if(currentByteOffset >= file.getLength()) {
-            return -1;
+        try {
+            if(currentByteOffset >= file.getLength()) {
+                return -1;
+            }
+
+            long length = file.getLength();
+            long toRead = Math.min(buffer.length, length - currentByteOffset);
+
+            ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+            byteBuffer.limit((int) toRead);
+
+            file.read(currentByteOffset, byteBuffer);
+            currentByteOffset += toRead;
+
+            return (int) toRead;
+        } catch (LibAumsException e) {
+            throw (IOException)e.getCause();
         }
 
-        long length = file.getLength();
-        long toRead = Math.min(buffer.length, length - currentByteOffset);
-
-        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
-        byteBuffer.limit((int) toRead);
-
-        file.read(currentByteOffset, byteBuffer);
-        currentByteOffset += toRead;
-
-        return (int) toRead;
     }
 
     @Override
     public int read(byte[] buffer, int byteOffset, int byteCount) throws IOException {
+        try {
+            if(currentByteOffset >= file.getLength()) {
+                return -1;
+            }
 
-        if(currentByteOffset >= file.getLength()) {
-            return -1;
+            long length = file.getLength();
+            long toRead = Math.min(byteCount, length - currentByteOffset);
+
+            ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+            byteBuffer.position(byteOffset);
+            byteBuffer.limit((int) toRead + byteOffset);
+
+            file.read(currentByteOffset, byteBuffer);
+            currentByteOffset += toRead;
+
+            return (int) toRead;
+        } catch (LibAumsException e) {
+            throw (IOException)e.getCause();
         }
 
-        long length = file.getLength();
-        long toRead = Math.min(byteCount, length - currentByteOffset);
-
-        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
-        byteBuffer.position(byteOffset);
-        byteBuffer.limit((int) toRead + byteOffset);
-
-        file.read(currentByteOffset, byteBuffer);
-        currentByteOffset += toRead;
-
-        return (int) toRead;
     }
 
     @Override

@@ -267,7 +267,6 @@ public class UsbMassStorageDevice {
 					continue;
 				}
 
-				// TODO UsbMassStorageDeviceConfig filling - missing endpoints
 				outList.add(UsbMassStorageDeviceConfig.builder()
 								.vendorId(device.getUsbDeviceDescriptor().idVendor())
 								.productId(device.getUsbDeviceDescriptor().idProduct())
@@ -275,9 +274,7 @@ public class UsbMassStorageDevice {
 								.inEndpointAddress(inEndpoint.bEndpointAddress())
 								.outEndpointAddress(outEndpoint.bEndpointAddress())
 						.build());
-
 			}
-
 		}
 
 		return outList;

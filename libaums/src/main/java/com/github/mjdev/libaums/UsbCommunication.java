@@ -17,6 +17,8 @@
 
 package com.github.mjdev.libaums;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
+
 /**
  * This Interface describes a low level device to perform USB transfers. At the
  * moment only bulk IN and OUT transfer are supported. Every class that follows
@@ -41,7 +43,7 @@ public interface UsbCommunication {
 	 * @return Bytes transmitted if successful, or -1.
 	 * @see #bulkInTransfer(byte[], int, int)
 	 */
-	public int bulkOutTransfer(byte[] buffer, int length);
+	public int bulkOutTransfer(byte[] buffer, int length) throws LibAumsException;
 
 	/**
 	 * Performs a bulk out transfer beginning at the given offset in the
@@ -57,7 +59,7 @@ public interface UsbCommunication {
 	 * @return Bytes transmitted if successful, or -1.
 	 * @see #bulkInTransfer(byte[], int)
 	 */
-	public int bulkOutTransfer(byte[] buffer, int offset, int length);
+	public int bulkOutTransfer(byte[] buffer, int offset, int length) throws LibAumsException;
 
 	/**
 	 * Performs a bulk in transfer beginning at offset zero in the
@@ -73,7 +75,7 @@ public interface UsbCommunication {
 	 * @return Bytes read if successful, or -1.
 	 * @see #bulkInTransfer(byte[], int, int)
 	 */
-	public int bulkInTransfer(byte[] buffer, int length);
+	public int bulkInTransfer(byte[] buffer, int length) throws LibAumsException;
 
 	/**
 	 * Performs a bulk in transfer beginning at the given offset in the
@@ -89,5 +91,5 @@ public interface UsbCommunication {
 	 * @return Bytes read if successful, or -1.
 	 * @see #bulkInTransfer(byte[], int)
 	 */
-	public int bulkInTransfer(byte[] buffer, int offset, int length);
+	public int bulkInTransfer(byte[] buffer, int offset, int length) throws LibAumsException;
 }

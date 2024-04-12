@@ -5,6 +5,7 @@ import com.atech.library.usb.libaums.usb.device.ATUsbDevice;
 import com.atech.library.usb.libaums.usb4java.Usb4JavaManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.usb4java.*;
 
@@ -56,6 +57,7 @@ public class UsbManagement {
     }
 
 
+    @SneakyThrows
     public static void main(String[] args) {
 
         //Usb4JavaManager usbManagement = new Usb4JavaManager();
