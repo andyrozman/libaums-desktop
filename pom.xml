@@ -29,7 +29,7 @@
 
     <modules>
         <module>libaums</module>
-        <module>ggc-onetouch</module>
+<!--        <module>ggc-onetouch</module>-->
     </modules>
 
 
