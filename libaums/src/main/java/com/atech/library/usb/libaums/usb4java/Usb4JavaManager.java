@@ -19,6 +19,7 @@ package com.atech.library.usb.libaums.usb4java;
 
 import com.atech.library.usb.libaums.UsbMassStorageLibrary;
 import com.atech.library.usb.libaums.data.LibAumsException;
+import com.atech.library.usb.libaums.data.UsbMassStorageDeviceConfig;
 import com.atech.library.usb.libaums.usb.device.ATUsbConfigurationDescriptor;
 import com.atech.library.usb.libaums.usb.device.ATUsbDevice;
 import com.atech.library.usb.libaums.usb.device.ATUsbDeviceDescriptor;
@@ -93,6 +94,7 @@ public class Usb4JavaManager {
 
         return outList;
     }
+
 
     /**
      * Get Device
@@ -169,18 +171,17 @@ public class Usb4JavaManager {
         return usbDevice;
     }
 
-    public static List<ATUsbConfigurationDescriptor> getConfigurationDescriptors(final Device device,
+    private static List<ATUsbConfigurationDescriptor> getConfigurationDescriptors(final Device device,
                                                                                  final int numConfigurations,
-                                                                                 DeviceHandle handle)
-    {
+                                                                                 DeviceHandle handle) {
         List<ATUsbConfigurationDescriptor> list = new ArrayList<>();
-        for (byte i = 0; i < numConfigurations; i += 1)
-        {
+
+        for (byte i = 0; i < numConfigurations; i += 1) {
             final ConfigDescriptor descriptor = new ConfigDescriptor();
             final int result = LibUsb.getConfigDescriptor(device, i, descriptor);
+
             if (result < 0) {
-                throw new LibUsbException("Unable to read config descriptor",
-                        result);
+                throw new LibUsbException("Unable to read config descriptor", result);
             }
 
             try
@@ -201,33 +202,26 @@ public class Usb4JavaManager {
         return list;
     }
 
+    public void getDeviceDetails(UsbMassStorageDeviceConfig usbDeviceSettings) throws LibAumsException {
 
+        UsbMassStorageLibrary.initLibrary();
 
+        // open device
+        DeviceHandle handle = LibUsb.openDeviceWithVidPid(null, usbDeviceSettings.getVendorId(),
+                usbDeviceSettings.getProductId());
 
+        if (handle == null) {
+            log.error("Device {} not found.", usbDeviceSettings.getReadableDeviceId());
+            throw LibAumsException.createWithLibUsbException("Device " + usbDeviceSettings.getReadableDeviceId() + " not found.", -1);
+        }
 
-//    static UsbServices services;
-//
-//    public static List<UsbDevice> getUsbDevices() throws UsbException {
-//        if (services==null) {
-//             services = UsbHostManager.getUsbServices();
-//        }
-//
-//        return discoverDevices(services.getRootUsbHub());
-//    }
-//
-//    public static List<UsbDevice> discoverDevices(UsbHub usbHub) {
-//        List<UsbDevice> deviceList = new ArrayList<>();
-//        for (Object attachedUsbDevice : usbHub.getAttachedUsbDevices()) {
-//            UsbDevice device = (UsbDevice) attachedUsbDevice;
-//
-//            if (device.isUsbHub()) {
-//                deviceList.addAll(discoverDevices((UsbHub)device));
-//            } else {
-//                deviceList.add(device);
-//            }
-//        }
-//        return deviceList;
-//    }
+        Device device = LibUsb.getDevice(handle);
 
+        getDevice(device, true, handle, null);
+
+        // Close the device
+        LibUsb.close(handle);
+
+    }
 
 }
