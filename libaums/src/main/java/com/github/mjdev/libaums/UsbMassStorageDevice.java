@@ -34,7 +34,6 @@ import java.util.List;
 import com.atech.library.usb.libaums.UsbMassStorageLibrary;
 import com.atech.library.usb.libaums.data.LibAumsException;
 import com.atech.library.usb.libaums.data.UsbConstants;
-import com.atech.library.usb.libaums.UsbManagement;
 import com.atech.library.usb.libaums.data.UsbMassStorageDeviceConfig;
 import com.atech.library.usb.libaums.usb.device.ATUsbDevice;
 import com.atech.library.usb.libaums.usb.device.ATUsbEndpointDescriptor;
@@ -48,7 +47,6 @@ import com.github.mjdev.libaums.partition.PartitionTableFactory;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 import com.github.mjdev.libaums.partition.Partition;
 import com.github.mjdev.libaums.partition.PartitionTable;
 import com.github.mjdev.libaums.partition.PartitionTableEntry;
@@ -174,6 +172,7 @@ public class UsbMassStorageDevice {
 	private boolean loadPartitionTable = true;
 
 	Usb4JavaUsbDeviceCommunication communication;
+	private boolean connectedToDevice;
 
 	/**
 	 * Construct a new {@link com.github.mjdev.libaums.UsbMassStorageDevice}.
@@ -253,7 +252,7 @@ public class UsbMassStorageDevice {
 				for (int j = 0; j < endpointCount; j++) {
 					ATUsbEndpointDescriptor endpoint = usbInterface.getEndpoint(j);
 					log.info( "found usb endpoint: " + endpoint);
-					if (endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+					if (endpoint.getTransferType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
 						if (endpoint.getDirection() == UsbConstants.USB_DIR_OUT) {
 							outEndpoint = endpoint;
 						} else {
@@ -311,6 +310,8 @@ public class UsbMassStorageDevice {
 		communication = new Usb4JavaUsbDeviceCommunication(this.usbMassStorageDeviceConfig);
 		communication.openDevice();
 
+		this.connectedToDevice = true;
+
 		log.info("Create Block Device for {}", usbMassStorageDeviceConfig.getReadableDeviceId());
 		blockDevice = BlockDeviceDriverFactory.createBlockDevice(communication);
 		blockDevice.init();
@@ -320,6 +321,8 @@ public class UsbMassStorageDevice {
 			partitionTable = PartitionTableFactory.createPartitionTable(blockDevice);
 			initPartitions();
 		}
+
+
 	}
 
 	/**
@@ -347,7 +350,9 @@ public class UsbMassStorageDevice {
 	 * or write from or to the partitions returned by {@link #getPartitions()}.
 	 */
 	public void close() throws LibAumsException {
-		this.communication.closeDevice();
+		if (this.connectedToDevice) {
+			this.communication.closeDevice();
+		}
 	}
 
 	/**

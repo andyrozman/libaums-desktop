@@ -1,36 +1,46 @@
+/*
+ * (C) Copyright 2024 Andy Rozman <andy.rozman@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.atech.library.usb.libaums.usb.device;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.apache.commons.lang3.StringUtils;
-import org.usb4java.DescriptorUtils;
 import org.usb4java.EndpointDescriptor;
+import org.usb4java.LibUsb;
 
 import javax.usb.UsbEndpointDescriptor;
 import java.nio.ByteBuffer;
+
+import static com.atech.library.usb.libaums.data.UsbConstants.USB_DIR_IN;
+import static com.atech.library.usb.libaums.data.UsbConstants.USB_DIR_OUT;
 
 @Data
 @Accessors(fluent = true)
 public class ATUsbEndpointDescriptor implements UsbEndpointDescriptor {
 
     byte bLength;
-
     byte bDescriptorType;
-
     byte bEndpointAddress;
-
     byte bmAttributes;
-
     short wMaxPacketSize;
-
     byte bInterval;
-
     byte bRefresh;
-
     byte bSynchAddress;
-
     ByteBuffer extra;
-
     int extraLength;
     
     
@@ -79,14 +89,11 @@ public class ATUsbEndpointDescriptor implements UsbEndpointDescriptor {
     }
 
 
-    public int getType() {
-        // TODO getType what is this
-        //DescriptorUtils.
-        return 0;
+    public int getTransferType() {
+        return bmAttributes & LibUsb.TRANSFER_TYPE_MASK;
     }
 
     public int getDirection() {
-        // TODO getDirecton what is this?
-        return 0;
+        return ((bEndpointAddress & LibUsb.ENDPOINT_IN) == 0) ? USB_DIR_OUT : USB_DIR_IN;
     }
 }

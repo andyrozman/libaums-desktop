@@ -1,3 +1,20 @@
+/*
+ * (C) Copyright 2024 Andy Rozman <andy.rozman@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package com.atech.library.usb.libaums.usb4java;
 
 import com.atech.library.usb.libaums.data.LibAumsException;
@@ -17,7 +34,7 @@ import java.nio.IntBuffer;
 @Slf4j
 public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
 
-    private static final int TRANSFER_TIMEOUT = 21000;
+    private static final int TRANSFER_TIMEOUT = 5000; // 21000
     DeviceHandle deviceHandle;
     UsbMassStorageDeviceConfig deviceConfig;
 
@@ -43,10 +60,29 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
         int result = LibUsb.claimInterface(handle, deviceConfig.getInterfaceNumber());
         if (result != LibUsb.SUCCESS)
         {
-            throw new LibUsbException("Unable to claim interface", result);
+            // if device is busy we try to detach kernel driver
+            if (result == LibUsb.ERROR_BUSY) {
+                int result2 = LibUsb.detachKernelDriver(handle, deviceConfig.getInterfaceNumber());
+                if (result2 != LibUsb.SUCCESS &&
+                        result2 != LibUsb.ERROR_NOT_SUPPORTED &&
+                        result2 != LibUsb.ERROR_NOT_FOUND) {
+                    throw new LibUsbException("Device busy and unable to detach kernel driver",
+                            result2);
+                }
+                log.debug("Device {} was busy. We dettached kernel driver which was successful.", deviceConfig.getReadableDeviceId());
+            } else {
+                throw new LibUsbException("Unable to claim interface", result);
+            }
+
+            log.debug("Trying to claim interafce again.");
+            int result3 = LibUsb.claimInterface(handle, deviceConfig.getInterfaceNumber());
+            if (result3 != LibUsb.SUCCESS) {
+                throw new LibUsbException("Unable to claim interface even after detaching kernel.", result3);
+            }
+
         }
 
-        log.info("Device {} opened and interafce {} claimed.", deviceConfig.getReadableDeviceId(), deviceConfig.getInterfaceNumber());
+        log.info("Device {} opened and interaface {} claimed.", deviceConfig.getReadableDeviceId(), deviceConfig.getInterfaceNumber());
     }
 
 
@@ -59,16 +95,20 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
         ByteBuffer buffer = BufferUtils.allocateByteBuffer(data.length);
         buffer.put(data);
         IntBuffer transferred = BufferUtils.allocateIntBuffer();
-        int result = LibUsb.bulkTransfer(deviceHandle,  deviceConfig.getOutEndpointAddress(), buffer,
+        int result = LibUsb.bulkTransfer(deviceHandle,  deviceConfig.getOutEndpointAddress(),
+                buffer,
                 transferred, TRANSFER_TIMEOUT);
         if (result != LibUsb.SUCCESS) {
-            throw new LibUsbException("Unable to send data", result);
+            throw new LibUsbException("Unable to send data: " + result, result);
         }
-        log.info(transferred.get() + " bytes sent to device");
+
+        int transferredCount = transferred.get();
+
+        log.info(transferredCount + " bytes sent to device");
 
         //			return deviceConnection.bulkTransfer(outEndpoint, buffer, length, TRANSFER_TIMEOUT);
 
-        return LibUsb.SUCCESS;
+        return transferredCount;
     }
 
     @Override
@@ -94,9 +134,11 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
         {
             throw LibAumsException.createWithLibUsbException("Unable to send data", result);
         }
-        log.info(transferred.get() + " bytes sent to device");
 
-        return LibUsb.SUCCESS;
+        int transferredCount = transferred.get();
+        log.info(transferredCount + " bytes sent to device");
+
+        return transferredCount;
 
 //			if (offset == 0)
 //				return deviceConnection.bulkTransfer(outEndpoint, buffer, length, TRANSFER_TIMEOUT);
@@ -115,23 +157,34 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
         log.info("BulkInTransfer (data={},length={})", data, length);
 
         // TODO bulkInTransfer, Libusb does things different than android
+        // some problem
 
         ByteBuffer buffer = BufferUtils.allocateByteBuffer(length).order(
                 ByteOrder.LITTLE_ENDIAN);
         IntBuffer transferred = BufferUtils.allocateIntBuffer();
-        int result = LibUsb.bulkTransfer(deviceHandle, deviceConfig.getInEndpointAddress(), buffer,
+        int result = LibUsb.bulkTransfer(deviceHandle,
+                deviceConfig.getInEndpointAddress(), buffer,
                 transferred, TRANSFER_TIMEOUT);
         if (result != LibUsb.SUCCESS) {
             throw LibAumsException.createWithLibUsbException("Unable to read data", result);
         }
-        log.info(transferred.get() + " bytes read from device");
-        System.arraycopy(buffer.array(), 0, data, 0, length);
+
+        int transferredCount = transferred.get();
+        log.info(transferredCount + " bytes read from device");
+        if (buffer.hasArray()) {
+            log.debug("Buffer: " + buffer);
+            System.arraycopy(buffer.array(), 0, data, 0, length);
+        } else {
+            log.debug("No data: " + buffer);
+        }
+
+        return transferredCount;
 
         //        return LibUsb.bulkTransfer(
 //                deviceHandle, deviceConfig.getInEndpointAddress(), buffer, length, TRANSFER_TIMEOUT);
 
 
-        return LibUsb.SUCCESS;
+        //return LibUsb.SUCCESS;
     }
 
     @Override
@@ -147,15 +200,25 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
         ByteBuffer buffer = BufferUtils.allocateByteBuffer(length).order(
                 ByteOrder.LITTLE_ENDIAN);
         IntBuffer transferred = BufferUtils.allocateIntBuffer();
-        int result = LibUsb.bulkTransfer(deviceHandle, deviceConfig.getInEndpointAddress(), buffer,
+        int result = LibUsb.bulkTransfer(deviceHandle, deviceConfig.getInEndpointAddress(),
+                buffer,
                 transferred, TRANSFER_TIMEOUT);
         if (result != LibUsb.SUCCESS) {
             throw LibAumsException.createWithLibUsbException("Unable to read data", result);
         }
-        log.info(transferred.get() + " bytes read from device");
-        System.arraycopy(buffer.array(), 0, data, offset, length);
 
-        return LibUsb.SUCCESS;
+        int transferredCount = transferred.get();
+        log.info(transferredCount + " bytes read from device");
+
+        if (buffer.hasArray()) {
+            log.debug("Buffer: " + buffer);
+            System.arraycopy(buffer.array(), 0, data, offset, length);
+        } else {
+            log.debug("No data: " + buffer);
+        }
+
+
+        return transferredCount;
 
         //			if (offset == 0)
 //				return deviceConnection.bulkTransfer(inEndpoint, buffer, length, TRANSFER_TIMEOUT);
