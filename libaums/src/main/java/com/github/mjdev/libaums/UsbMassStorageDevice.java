@@ -31,12 +31,21 @@ import java.util.List;
 //import android.hardware.usb.UsbInterface;
 //import android.hardware.usb.UsbManager;
 //import android.os.Build;
-import com.atech.library.usb.libaums.UsbConstants;
+import com.atech.library.usb.libaums.UsbMassStorageLibrary;
+import com.atech.library.usb.libaums.data.LibAumsException;
+import com.atech.library.usb.libaums.data.UsbConstants;
 import com.atech.library.usb.libaums.UsbManagement;
-import com.atech.library.usb.libaums.device.ATUsbDevice;
-import com.atech.library.usb.libaums.device.ATUsbEndpointDescriptor;
-import com.atech.library.usb.libaums.device.ATUsbInterface;
-import com.atech.library.usb.libaums.device.ATUsbInterfaceDescriptor;
+import com.atech.library.usb.libaums.data.UsbMassStorageDeviceConfig;
+import com.atech.library.usb.libaums.usb.device.ATUsbDevice;
+import com.atech.library.usb.libaums.usb.device.ATUsbEndpointDescriptor;
+import com.atech.library.usb.libaums.usb.device.ATUsbInterface;
+import com.atech.library.usb.libaums.usb.device.ATUsbInterfaceDescriptor;
+import com.atech.library.usb.libaums.usb4java.Usb4JavaManager;
+import com.atech.library.usb.libaums.usb4java.Usb4JavaUsbDeviceCommunication;
+import com.github.mjdev.libaums.driver.BlockDeviceDriverFactory;
+import com.github.mjdev.libaums.driver.scsi.ScsiBlockDevice;
+import com.github.mjdev.libaums.partition.PartitionTableFactory;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
@@ -45,6 +54,8 @@ import com.github.mjdev.libaums.partition.PartitionTable;
 import com.github.mjdev.libaums.partition.PartitionTableEntry;
 
 import javax.usb.*;
+
+import static com.atech.library.usb.libaums.data.UsbConstants.*;
 
 /**
  * Class representing a connected USB mass storage device. You can enumerate
@@ -55,7 +66,7 @@ import javax.usb.*;
  * After choosing a device you have to get the permission for the underlying
  //  @link android.hardware.usb.UsbDevice. The underlying
  //  @link android.hardware.usb.UsbDevice can be accessed via
- * {@link #getUsbDevice()}.
+ * @link #getUsbDevice()
  * <p>
  * After that you need to call {@link #setupDevice()}. This will initialize the
  * mass storage device and read the partitions (
@@ -147,50 +158,33 @@ public class UsbMassStorageDevice {
 //		}
 //	}
 
-	private static final String TAG = UsbMassStorageDevice.class.getSimpleName();
 
-	/**
-	 * subclass 6 means that the usb mass storage device implements the SCSI
-	 * transparent command set
-	 */
-	private static final int INTERFACE_SUBCLASS = 6;
-
-	/**
-	 * protocol 80 means the communication happens only via bulk transfers
-	 */
-	private static final int INTERFACE_PROTOCOL = 80;
 
 	private static int TRANSFER_TIMEOUT = 21000;
 
-	//private UsbManager usbManager;
-	//private UsbDeviceConnection deviceConnection;
-	private UsbDevice usbDevice;
-	private UsbInterface usbInterface;
-	private UsbEndpoint inEndpoint;
-	private UsbEndpoint outEndpoint;
 
-	private BlockDeviceDriver blockDevice;
+	UsbMassStorageDeviceConfig usbMassStorageDeviceConfig;
+
+	@Getter
+	private ScsiBlockDevice blockDevice;
 	private PartitionTable partitionTable;
-	private List<Partition> partitions = new ArrayList<Partition>();
+	private List<Partition> partitions = new ArrayList<>();
+
+	// this two parameters will be overwritten with values
+	private boolean loadPartitionTable = true;
+
+	Usb4JavaUsbDeviceCommunication communication;
 
 	/**
 	 * Construct a new {@link com.github.mjdev.libaums.UsbMassStorageDevice}.
 	 * The given parameters have to actually be a mass storage device, this is
 	 * not checked in the constructor!
 	 * 
-	 // @param usbManager
-	 * @param usbDevice
-	 * @param usbInterface
-	 * @param inEndpoint
-	 * @param outEndpoint
+	 * @param usbMassStorageDeviceConfig
 	 */
-	private UsbMassStorageDevice(/*UsbManager usbManager,*/ UsbDevice usbDevice,
-			UsbInterface usbInterface, UsbEndpoint inEndpoint, UsbEndpoint outEndpoint) {
-		//this.usbManager = usbManager;
-		this.usbDevice = usbDevice;
-		this.usbInterface = usbInterface;
-		this.inEndpoint = inEndpoint;
-		this.outEndpoint = outEndpoint;
+	private UsbMassStorageDevice(UsbMassStorageDeviceConfig usbMassStorageDeviceConfig) {
+		this.usbMassStorageDeviceConfig = usbMassStorageDeviceConfig;
+		this.loadPartitionTable = UsbMassStorageLibrary.LOAD_PARTITIONS;
 	}
 
 	/**
@@ -202,82 +196,92 @@ public class UsbMassStorageDevice {
 	 * @return An array of suitable mass storage devices or an empty array if
 	 *         none could be found.
 	 */
-	public static UsbMassStorageDevice[] getMassStorageDevices() throws UsbException {
-		ArrayList<UsbMassStorageDevice> result = new ArrayList<UsbMassStorageDevice>();
+	public static UsbMassStorageDevice[] getMassStorageDevices() throws LibAumsException {
+		List<UsbMassStorageDevice> result = new ArrayList<>();
 
-		//List<ATUsbDevice> devices = new ArrayList<>();
+		List<UsbMassStorageDeviceConfig> massStorageDevices =
+				getListOfAttachedUsbMassStorageDevices();
 
-		List<ATUsbDevice> deviceList = UsbManagement.getDeviceList();
+		for (UsbMassStorageDeviceConfig massStorageDevice : massStorageDevices) {
+			result.add(new UsbMassStorageDevice(massStorageDevice));
+		}
 
-
-		for (ATUsbDevice device : deviceList) {
-			log.info( "found usb device: " + device);
-
-			//device.getUsbDeviceDescriptor().
-
-			int interfaceCount = device.getInterfaceCount();
-			//for (int i = 0; i < interfaceCount; i++) {
-				ATUsbInterface usbInterfaceRoot = device.getInterface(0); //read mass storage not HID interface. HID interface is 1
-				log.info( "found usb interface: " + usbInterfaceRoot);
-
-				for (ATUsbInterfaceDescriptor usbInterface : usbInterfaceRoot.altsettings()) {
-
-					// we currently only support SCSI transparent command set with
-					// bulk transfers only!
-					if (usbInterface.bInterfaceClass() != UsbConstants.USB_CLASS_MASS_STORAGE
-							||
-							usbInterface.bInterfaceSubClass() != INTERFACE_SUBCLASS
-							|| usbInterface.bInterfaceProtocol() != INTERFACE_PROTOCOL) {
-						log.info("Device interface not suitable ! Found class={},subclass={},protocol={}), required=8/6/80 (Mass Storage/SCSI/Bulk-Only)", usbInterface.bInterfaceClass(), usbInterface.bInterfaceSubClass(), usbInterface.bInterfaceProtocol());
-						continue;
-					}
-
-					// Every mass storage device has exactly two endpoints
-					// One IN and one OUT endpoint
-					int endpointCount = usbInterface.bNumEndpoints();
-					if (endpointCount != 2) {
-						log.warn( "interface endpoint count != 2");
-					}
-
-					ATUsbEndpointDescriptor outEndpoint = null;
-					ATUsbEndpointDescriptor inEndpoint = null;
-					for (int j = 0; j < endpointCount; j++) {
-						ATUsbEndpointDescriptor endpoint = usbInterface.getEndpoint(j);
-						log.info( "found usb endpoint: " + endpoint);
-						if(endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
-							if (endpoint.getDirection() == UsbConstants.USB_DIR_OUT) {
-								outEndpoint = endpoint;
-							} else {
-								inEndpoint = endpoint;
-							}
-						}
-					}
-
-					if (outEndpoint == null || inEndpoint == null) {
-						log.error( "Not all needed endpoints found!");
-						continue;
-					}
-
-					// TODO put on list determine how
-//					result.add(new UsbMassStorageDevice(/*usbManager,*/ device, usbInterface, inEndpoint,
-//							outEndpoint));
-				}
-
-
-
-
-//				result.add(new UsbMassStorageDevice(usbManager, device, usbInterface, inEndpoint,
-//						outEndpoint));
-
-			}
-		//}
-//
-//		return result.toArray(new UsbMassStorageDevice[0]);
-
-		return null;
+		return result.toArray(new UsbMassStorageDevice[0]);
 	}
 
+	public static UsbMassStorageDevice getMassStorageDevice(UsbMassStorageDeviceConfig config) {
+		return new UsbMassStorageDevice(config);
+	}
 
+	public static List<UsbMassStorageDeviceConfig> getListOfAttachedUsbMassStorageDevices() throws LibAumsException {
+
+		List<UsbMassStorageDeviceConfig> outList = new ArrayList<>();
+
+		List<ATUsbDevice> deviceList = Usb4JavaManager.getDeviceList();
+
+		for (ATUsbDevice device : deviceList) {
+			log.info("found usb device: " + device);
+
+			//int interfaceCount = device.getInterfaceCount();
+			//for (int i = 0; i < interfaceCount; i++) {
+			ATUsbInterface usbInterfaceRoot = device.getInterface(0); //read mass storage not HID interface. HID interface is 1
+			log.info( "found usb interface: " + usbInterfaceRoot);
+
+			for (ATUsbInterfaceDescriptor usbInterface : usbInterfaceRoot.altsettings()) {
+
+				// we currently only support SCSI transparent command set with
+				// bulk transfers only!
+				if (usbInterface.bInterfaceClass() != USB_CLASS_MASS_STORAGE ||
+					usbInterface.bInterfaceSubClass() != MASS_STORAGE_SUBCLASS_SCSI ||
+					usbInterface.bInterfaceProtocol() != MASS_STORAGE_PROTOCOL_BBB_BULK_ONLY) {
+					log.info("Device interface not suitable ! Found class={},subclass={},protocol={}), required=8/6/80 (Mass Storage/SCSI/Bulk-Only)",
+							usbInterface.bInterfaceClass(),
+							usbInterface.bInterfaceSubClass(),
+							usbInterface.bInterfaceProtocol());
+					continue;
+				}
+
+				// Every mass storage device has exactly two endpoints
+				// One IN and one OUT endpoint
+				int endpointCount = usbInterface.bNumEndpoints();
+				if (endpointCount != 2) {
+					log.warn("interface endpoint count != 2");
+				}
+
+				ATUsbEndpointDescriptor outEndpoint = null;
+				ATUsbEndpointDescriptor inEndpoint = null;
+				for (int j = 0; j < endpointCount; j++) {
+					ATUsbEndpointDescriptor endpoint = usbInterface.getEndpoint(j);
+					log.info( "found usb endpoint: " + endpoint);
+					if (endpoint.getType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
+						if (endpoint.getDirection() == UsbConstants.USB_DIR_OUT) {
+							outEndpoint = endpoint;
+						} else {
+							inEndpoint = endpoint;
+						}
+					}
+				}
+
+				if (outEndpoint == null || inEndpoint == null) {
+					log.error("Not all needed endpoints found!");
+					continue;
+				}
+
+				// TODO UsbMassStorageDeviceConfig filling - missing endpoints
+				outList.add(UsbMassStorageDeviceConfig.builder()
+								.vendorId(device.getUsbDeviceDescriptor().idVendor())
+								.productId(device.getUsbDeviceDescriptor().idProduct())
+								.interfaceNumber(usbInterface.bInterfaceNumber())
+								.inEndpointAddress(inEndpoint.bEndpointAddress())
+								.outEndpointAddress(outEndpoint.bEndpointAddress())
+						.build());
+
+			}
+
+		}
+
+		return outList;
+	}
 
 
 
@@ -290,59 +294,35 @@ public class UsbMassStorageDevice {
 	 * @throws IllegalStateException
 	 *             If permission to communicate with the underlying
 	 *             {@link UsbDevice} is missing.
-	 * @see #getUsbDevice()
+	 * //@see #getUsbDevice()
 	 */
-	public void init() throws IOException {
-		//if (usbManager.hasPermission(usbDevice))
-			setupDevice();
-		//else
-		//	throw new IllegalStateException("Missing permission to access usb device: " + usbDevice);
-
+	public void init() throws LibAumsException {
+		setupDevice();
 	}
 
 	/**
 	 * Sets the device up. Claims interface and initiates the device connection.
-	 * Chooses the right{@link com.github.mjdev.libaums.UsbCommunication}
-	 * depending on the Android version (
-	 * @link com.github.mjdev.libaums.UsbMassStorageDevice.HoneyCombMr1Communication
-	 * or (
-	 * @link com.github.mjdev.libaums.UsbMassStorageDevice.JellyBeanMr2Communication
-	 * ).
-	 * <p>
-	 * Initializes the {@link #blockDevice} and reads the partitions.
+	 *
+	 * Initializes the {@link #blockDevice} and reads the partitions (if so configured).
 	 * 
-	 * @throws IOException
+	 * @throws LibAumsException
 	 *             If reading from the physical device fails.
 	 * @see #init()
 	 */
-	private void setupDevice() throws IOException {
-//		log.debug( "setup device");
-//		UsbHostManager usbManager;
-//
-//		deviceConnection = usbManager.openDevice(usbDevice);
-//		if (deviceConnection == null) {
-//			log.error( "deviceConnetion is null!");
-//			return;
-//		}
-//
-//		boolean claim = deviceConnection.claimInterface(usbInterface, true);
-//		if (!claim) {
-//			log.error( "could not claim interface!");
-//			return;
-//		}
-//
-//		UsbCommunication communication;
-//		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-//			communication = new JellyBeanMr2Communication();
-//		} else {
-//			log.info( "using workaround usb communication");
-//			communication = new HoneyCombMr1Communication();
-//		}
-//
-//		blockDevice = BlockDeviceDriverFactory.createBlockDevice(communication);
-//		blockDevice.init();
-//		partitionTable = PartitionTableFactory.createPartitionTable(blockDevice);
-//		initPartitions();
+	private void setupDevice() throws LibAumsException {
+		log.info("Init device {}", usbMassStorageDeviceConfig.getReadableDeviceId());
+		communication = new Usb4JavaUsbDeviceCommunication(this.usbMassStorageDeviceConfig);
+		communication.openDevice();
+
+		log.info("Create Block Device for {}", usbMassStorageDeviceConfig.getReadableDeviceId());
+		blockDevice = BlockDeviceDriverFactory.createBlockDevice(communication);
+		blockDevice.init();
+
+		if (loadPartitionTable) {
+			log.info("Create Partition Table for {}", usbMassStorageDeviceConfig.getReadableDeviceId());
+			partitionTable = PartitionTableFactory.createPartitionTable(blockDevice);
+			initPartitions();
+		}
 	}
 
 	/**
@@ -352,7 +332,7 @@ public class UsbMassStorageDevice {
 	 * @throws IOException
 	 *             If reading from the {@link #blockDevice} fails.
 	 */
-	private void initPartitions() throws IOException {
+	private void initPartitions() throws LibAumsException {
 		Collection<PartitionTableEntry> partitionEntrys = partitionTable.getPartitionTableEntries();
 
 		for (PartitionTableEntry entry : partitionEntrys) {
@@ -369,15 +349,8 @@ public class UsbMassStorageDevice {
 	 * method no further communication is possible. That means you can not read
 	 * or write from or to the partitions returned by {@link #getPartitions()}.
 	 */
-	public void close() {
-//		log.debug( "close device");
-//		if(deviceConnection == null) return;
-//
-//		boolean release = deviceConnection.releaseInterface(usbInterface);
-//		if (!release) {
-//			log.error( "could not release interface!");
-//		}
-//		deviceConnection.close();
+	public void close() throws LibAumsException {
+		this.communication.closeDevice();
 	}
 
 	/**
@@ -397,7 +370,9 @@ public class UsbMassStorageDevice {
 	 // @return Underlying @link android.hardware.usb.UsbDevice used for
 	 *         communication.
 	 */
-	public UsbDevice getUsbDevice() {
-		return usbDevice;
-	}
+//	public UsbDevice getUsbDevice() {
+//		return usbDevice;
+//	}
+
+
 }

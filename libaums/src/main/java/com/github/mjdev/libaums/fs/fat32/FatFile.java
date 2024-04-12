@@ -20,6 +20,7 @@ package com.github.mjdev.libaums.fs.fat32;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 import com.github.mjdev.libaums.fs.UsbFile;
 
@@ -74,7 +75,7 @@ public class FatFile implements UsbFile {
 	 *             If reading from device fails.
 	 */
 	public static FatFile create(FatLfnDirectoryEntry entry, BlockDeviceDriver blockDevice,
-			FAT fat, Fat32BootSector bootSector, FatDirectory parent) throws IOException {
+			FAT fat, Fat32BootSector bootSector, FatDirectory parent) throws LibAumsException {
 		return new FatFile(blockDevice, fat, bootSector, entry, parent);
 	}
 
@@ -84,7 +85,7 @@ public class FatFile implements UsbFile {
 	 * @throws IOException
 	 *             If reading from FAT fails.
 	 */
-	private void initChain() throws IOException {
+	private void initChain() throws LibAumsException {
 		if (chain == null) {
 			chain = new ClusterChain(entry.getStartCluster(), blockDevice, fat, bootSector);
 		}
@@ -106,7 +107,7 @@ public class FatFile implements UsbFile {
 	}
 
 	@Override
-	public void setName(String newName) throws IOException {
+	public void setName(String newName) throws LibAumsException {
 		parent.renameEntry(entry, newName);
 	}
 
@@ -136,7 +137,7 @@ public class FatFile implements UsbFile {
 	}
 
 	@Override
-	public UsbFile[] listFiles() throws IOException {
+	public UsbFile[] listFiles() throws LibAumsException {
 		throw new UnsupportedOperationException("This is a file!");
 	}
 
@@ -146,21 +147,21 @@ public class FatFile implements UsbFile {
 	}
 
 	@Override
-	public void setLength(long newLength) throws IOException {
+	public void setLength(long newLength) throws LibAumsException {
         	initChain();
 		chain.setLength(newLength);
 		entry.setFileSize(newLength);
 	}
 
 	@Override
-	public void read(long offset, ByteBuffer destination) throws IOException {
+	public void read(long offset, ByteBuffer destination) throws LibAumsException {
 		initChain();
 		entry.setLastAccessedTimeToNow();
 		chain.read(offset, destination);
 	}
 
 	@Override
-	public void write(long offset, ByteBuffer source) throws IOException {
+	public void write(long offset, ByteBuffer source) throws LibAumsException {
 		initChain();
 		long length = offset + source.remaining();
 		if (length > getLength())
@@ -170,7 +171,7 @@ public class FatFile implements UsbFile {
 	}
 
 	@Override
-	public void flush() throws IOException {
+	public void flush() throws LibAumsException {
 		// we only have to update the parent because we are always writing
 		// everything
 		// immediately to the device
@@ -182,27 +183,31 @@ public class FatFile implements UsbFile {
 
 	@Override
 	public void close() throws IOException {
-		flush();
+		try {
+			flush();
+		} catch(LibAumsException ex) {
+			throw (IOException) ex.getCause();
+		}
 	}
 
 	@Override
-	public UsbFile createDirectory(String name) throws IOException {
+	public UsbFile createDirectory(String name) throws LibAumsException {
 		throw new UnsupportedOperationException("This is a file!");
 	}
 
 	@Override
-	public UsbFile createFile(String name) throws IOException {
+	public UsbFile createFile(String name) throws LibAumsException {
 		throw new UnsupportedOperationException("This is a file!");
 	}
 
 	@Override
-	public void moveTo(UsbFile destination) throws IOException {
+	public void moveTo(UsbFile destination) throws LibAumsException {
 		parent.move(entry, destination);
 		parent = (FatDirectory) destination;
 	}
 
 	@Override
-	public void delete() throws IOException {
+	public void delete() throws LibAumsException {
 		initChain();
 		parent.removeEntry(entry);
 		parent.write();

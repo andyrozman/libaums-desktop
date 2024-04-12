@@ -23,6 +23,7 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -103,7 +104,7 @@ public class FAT {
 	 * @throws IOException
 	 *             If reading from device fails.
 	 */
-	/* package */Long[] getChain(long startCluster) throws IOException {
+	/* package */Long[] getChain(long startCluster) throws LibAumsException {
 		
 		if(startCluster == 0) {
 			// if the start cluster is 0, we have an empty file 
@@ -158,7 +159,7 @@ public class FAT {
 	 * @throws IOException
 	 *             If reading or writing to the FAT fails.
 	 */
-	/* package */Long[] alloc(Long[] chain, int numberOfClusters) throws IOException {
+	/* package */Long[] alloc(Long[] chain, int numberOfClusters) throws LibAumsException {
         
         // save original number of clusters for fs info structure
         final int originalNumberOfClusters = numberOfClusters;
@@ -291,7 +292,7 @@ public class FAT {
 	 *             If more clusters are requested to be freed than currently
 	 *             exist in the chain.
 	 */
-	/* package */Long[] free(Long[] chain, int numberOfClusters) throws IOException {
+	/* package */Long[] free(Long[] chain, int numberOfClusters) throws LibAumsException {
 		final int offsetInChain = chain.length - numberOfClusters;
 		// for performance reasons we always read or write two times the block
 		// size

@@ -1,4 +1,4 @@
-package com.atech.library.usb.libaums;
+package com.atech.library.usb.libaums.data;
 
 public class UsbConstants {
 
@@ -11,6 +11,23 @@ public class UsbConstants {
     public static final int USB_CLASS_HID = 3;
     public static final int USB_CLASS_HUB = 9;
     public static final int USB_CLASS_MASS_STORAGE = 8;
+
+    public static final int MASS_STORAGE_SUBCLASS_UNKNOWN = 0;
+    public static final int MASS_STORAGE_SUBCLASS_RBC = 1;
+    public static final int MASS_STORAGE_SUBCLASS_MMC5 = 2;
+    public static final int MASS_STORAGE_SUBCLASS_OBSOLETE_1 = 3;
+    public static final int MASS_STORAGE_SUBCLASS_UFI = 4;
+    public static final int MASS_STORAGE_SUBCLASS_OBSOLETE_2 = 5;
+    public static final int MASS_STORAGE_SUBCLASS_SCSI = 6;
+    public static final int MASS_STORAGE_SUBCLASS_LDS_FS = 7;
+    public static final int MASS_STORAGE_SUBCLASS_IEEE_1667 = 8;
+
+    public static final int MASS_STORAGE_PROTOCOL_CBI = 0;
+    public static final int MASS_STORAGE_PROTOCOL_CBI_NO_INT = 1;
+    public static final int MASS_STORAGE_PROTOCOL_BBB_BULK_ONLY = 80;
+    public static final int MASS_STORAGE_PROTOCOL_UAS = 98;
+
+
     public static final int USB_CLASS_MISC = 239;
     public static final int USB_CLASS_PER_INTERFACE = 0;
     public static final int USB_CLASS_PHYSICA = 5;

@@ -20,6 +20,7 @@ package com.github.mjdev.libaums.partition;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 import com.github.mjdev.libaums.fs.FileSystem;
 import com.github.mjdev.libaums.fs.FileSystemFactory;
@@ -68,7 +69,7 @@ public class Partition implements BlockDeviceDriver {
 	 *             If reading from the device fails.
 	 */
 	public static Partition createPartition(PartitionTableEntry entry, BlockDeviceDriver blockDevice)
-			throws IOException {
+			throws LibAumsException {
 		Partition partition = null;
 
 		// we currently only support fat32
@@ -117,7 +118,7 @@ public class Partition implements BlockDeviceDriver {
 	}
 
 	@Override
-	public void read(long offset, ByteBuffer dest) throws IOException {
+	public void read(long offset, ByteBuffer dest) throws LibAumsException {
 		long devOffset = offset / blockSize + logicalBlockAddress;
 		// TODO try to make this more efficient by for example making tmp buffer
 		// global
@@ -138,7 +139,7 @@ public class Partition implements BlockDeviceDriver {
 	}
 
 	@Override
-	public void write(long offset, ByteBuffer src) throws IOException {
+	public void write(long offset, ByteBuffer src) throws LibAumsException {
 		long devOffset = offset / blockSize + logicalBlockAddress;
 		// TODO try to make this more efficient by for example making tmp buffer
 		// global

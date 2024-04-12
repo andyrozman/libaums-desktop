@@ -17,6 +17,8 @@
 
 package com.github.mjdev.libaums.driver;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -35,7 +37,7 @@ public interface BlockDeviceDriver {
 	 * @throws IOException
 	 *             If initializing fails
 	 */
-	public void init() throws IOException;
+	public void init() throws LibAumsException;
 
 	/**
 	 * Reads from the block device at a certain offset into the given buffer.
@@ -54,7 +56,7 @@ public interface BlockDeviceDriver {
 	 * @throws IOException
 	 *             If reading fails.
 	 */
-	public void read(long deviceOffset, ByteBuffer buffer) throws IOException;
+	public void read(long deviceOffset, ByteBuffer buffer) throws LibAumsException;
 
 	/**
 	 * Writes to the block device at a certain offset from the given buffer. The
@@ -73,7 +75,7 @@ public interface BlockDeviceDriver {
 	 * @throws IOException
 	 *             If writing fails.
 	 */
-	public void write(long deviceOffset, ByteBuffer buffer) throws IOException;
+	public void write(long deviceOffset, ByteBuffer buffer) throws LibAumsException;
 
 	/**
 	 * Returns the block size of the block device. Every block device can only

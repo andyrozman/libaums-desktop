@@ -37,7 +37,7 @@ public class BlockDeviceDriverFactory {
 	 *            The underlying USB communication.
 	 * @return A driver which can handle the USB mass storage device.
 	 */
-	public static BlockDeviceDriver createBlockDevice(UsbCommunication usbCommunication) {
+	public static ScsiBlockDevice createBlockDevice(UsbCommunication usbCommunication) {
 		// we currently only support scsi transparent command set
 		return new ScsiBlockDevice(usbCommunication);
 	}

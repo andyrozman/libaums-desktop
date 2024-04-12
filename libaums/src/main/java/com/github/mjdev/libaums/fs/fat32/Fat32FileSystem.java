@@ -20,6 +20,7 @@ package com.github.mjdev.libaums.fs.fat32;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 import com.github.mjdev.libaums.fs.FileSystem;
 import com.github.mjdev.libaums.fs.UsbFile;
@@ -50,7 +51,7 @@ public class Fat32FileSystem implements FileSystem {
 	 * @throws IOException
 	 *             If reading from the device fails.
 	 */
-	private Fat32FileSystem(BlockDeviceDriver blockDevice) throws IOException {
+	private Fat32FileSystem(BlockDeviceDriver blockDevice) throws LibAumsException {
 		ByteBuffer buffer = ByteBuffer.allocate(512);
 		blockDevice.read(0, buffer);
 		bootSector = Fat32BootSector.read(buffer);
@@ -71,7 +72,7 @@ public class Fat32FileSystem implements FileSystem {
 	 * @throws IOException
 	 *             If reading from the device fails.
 	 */
-	public static Fat32FileSystem read(BlockDeviceDriver blockDevice) throws IOException {
+	public static Fat32FileSystem read(BlockDeviceDriver blockDevice) throws LibAumsException {
 		return new Fat32FileSystem(blockDevice);
 	}
 

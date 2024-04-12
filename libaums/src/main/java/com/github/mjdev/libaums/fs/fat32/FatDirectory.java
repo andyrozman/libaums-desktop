@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
 import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
@@ -40,8 +41,6 @@ import com.github.mjdev.libaums.fs.UsbFile;
  */
 @Slf4j
 public class FatDirectory implements UsbFile {
-
-	private static String TAG = FatDirectory.class.getSimpleName();
 
 	private ClusterChain chain;
 	private BlockDeviceDriver blockDevice;
@@ -134,7 +133,7 @@ public class FatDirectory implements UsbFile {
 	 *             If reading from the device fails.
 	 */
 	/* package */static FatDirectory readRoot(BlockDeviceDriver blockDevice, FAT fat,
-			Fat32BootSector bootSector) throws IOException {
+			Fat32BootSector bootSector) throws LibAumsException {
 		FatDirectory result = new FatDirectory(blockDevice, fat, bootSector, null);
 		result.chain = new ClusterChain(bootSector.getRootDirStartCluster(), blockDevice, fat,
 				bootSector);
@@ -149,7 +148,7 @@ public class FatDirectory implements UsbFile {
 	 * @throws IOException
 	 *             If reading from the device fails.
 	 */
-	private void init() throws IOException {
+	private void init() throws LibAumsException {
 		if (chain == null) {
 			chain = new ClusterChain(entry.getStartCluster(), blockDevice, fat, bootSector);
 		}
@@ -176,7 +175,7 @@ public class FatDirectory implements UsbFile {
 	 *             If reading from the device fails.
 	 * @see #write()
 	 */
-	private void readEntries() throws IOException {
+	private void readEntries() throws LibAumsException {
 		ByteBuffer buffer = ByteBuffer.allocate((int) chain.getLength());
 		chain.read(0, buffer);
 		// we have to buffer all long filename entries to parse them later
@@ -269,7 +268,7 @@ public class FatDirectory implements UsbFile {
 	 * @throws IOException
 	 *             If writing the change to the disk fails.
 	 */
-	/* package */void renameEntry(FatLfnDirectoryEntry lfnEntry, String newName) throws IOException {
+	/* package */void renameEntry(FatLfnDirectoryEntry lfnEntry, String newName) throws LibAumsException {
 		if (lfnEntry.getName().equals(newName))
 			return;
 
@@ -289,7 +288,7 @@ public class FatDirectory implements UsbFile {
 	 * @throws IOException
 	 * @see {@link #write()}
 	 */
-	/* package */void write() throws IOException {
+	/* package */void write() throws LibAumsException {
 		init();
 		final boolean writeVolumeLabel = isRoot() && volumeLabel != null;
 		// first lookup the total entries needed
@@ -343,9 +342,9 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public FatFile createFile(String name) throws IOException {
+	public FatFile createFile(String name) throws LibAumsException {
 		if (lfnMap.containsKey(name.toLowerCase(Locale.getDefault())))
-			throw new IOException("Item already exists!");
+			throw LibAumsException.createWithIOException("Item already exists!");
 
 		init(); // initialise the directory before creating files
 
@@ -365,9 +364,9 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public FatDirectory createDirectory(String name) throws IOException {
+	public FatDirectory createDirectory(String name) throws LibAumsException {
 		if (lfnMap.containsKey(name.toLowerCase(Locale.getDefault())))
-			throw new IOException("Item already exists!");
+			throw LibAumsException.createWithIOException("Item already exists!");
 
 		init(); // initialise the directory before creating files
 
@@ -422,7 +421,7 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public UsbFile search(String path) throws IOException {
+	public UsbFile search(String path) throws LibAumsException {
         log.debug( "search file: " + path);
         init();
 
@@ -479,7 +478,7 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public void setName(String newName) throws IOException {
+	public void setName(String newName) throws LibAumsException {
 		if (isRoot())
 			throw new IllegalStateException("Cannot rename root dir!");
 		parent.renameEntry(entry, newName);
@@ -512,7 +511,7 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public String[] list() throws IOException {
+	public String[] list() throws LibAumsException {
 		init();
         List<String> list = new ArrayList<String>(entries.size());
 		for (int i = 0; i < entries.size(); i++) {
@@ -529,7 +528,7 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public UsbFile[] listFiles() throws IOException {
+	public UsbFile[] listFiles() throws LibAumsException {
         init();
         List<UsbFile> list = new ArrayList<UsbFile>(entries.size());
         for (int i = 0; i < entries.size(); i++) {
@@ -552,17 +551,17 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public void read(long offset, ByteBuffer destination) throws IOException {
+	public void read(long offset, ByteBuffer destination) throws LibAumsException {
 		throw new UnsupportedOperationException("This is a directory!");
 	}
 
 	@Override
-	public void write(long offset, ByteBuffer source) throws IOException {
+	public void write(long offset, ByteBuffer source) throws LibAumsException {
 		throw new UnsupportedOperationException("This is a directory!");
 	}
 
 	@Override
-	public void flush() throws IOException {
+	public void flush() throws LibAumsException {
 		throw new UnsupportedOperationException("This is a directory!");
 	}
 
@@ -572,7 +571,7 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public void moveTo(UsbFile destination) throws IOException {
+	public void moveTo(UsbFile destination) throws LibAumsException {
 		if (isRoot())
 			throw new IllegalStateException("cannot move root dir!");
 
@@ -585,7 +584,7 @@ public class FatDirectory implements UsbFile {
 
 		FatDirectory destinationDir = (FatDirectory) destination;
 		if (destinationDir.lfnMap.containsKey(entry.getName().toLowerCase(Locale.getDefault())))
-			throw new IOException("item already exists in destination!");
+			throw LibAumsException.createWithIOException("item already exists in destination!");
 
         init();
 		destinationDir.init();
@@ -616,7 +615,7 @@ public class FatDirectory implements UsbFile {
 	 *             If the destination is not a directory or destination is on a
 	 *             different file system.
 	 */
-	/* package */void move(FatLfnDirectoryEntry entry, UsbFile destination) throws IOException {
+	/* package */void move(FatLfnDirectoryEntry entry, UsbFile destination) throws LibAumsException {
 		if (!destination.isDirectory())
 			throw new IllegalStateException("destination cannot be a file!");
 		if (!(destination instanceof FatDirectory))
@@ -626,7 +625,7 @@ public class FatDirectory implements UsbFile {
 
 		FatDirectory destinationDir = (FatDirectory) destination;
 		if (destinationDir.lfnMap.containsKey(entry.getName().toLowerCase(Locale.getDefault())))
-			throw new IOException("item already exists in destination!");
+			throw LibAumsException.createWithIOException("item already exists in destination!");
 
 		init();
 		destinationDir.init();
@@ -640,7 +639,7 @@ public class FatDirectory implements UsbFile {
 	}
 
 	@Override
-	public void delete() throws IOException {
+	public void delete() throws LibAumsException {
 		if (isRoot())
 			throw new IllegalStateException("Root dir cannot be deleted!");
 

@@ -20,6 +20,7 @@ package com.github.mjdev.libaums.fs.fat32;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
 import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
@@ -58,7 +59,7 @@ public class ClusterChain {
 	 * @throws IOException
 	 */
 	/* package */ClusterChain(long startCluster, BlockDeviceDriver blockDevice, FAT fat,
-			Fat32BootSector bootSector) throws IOException {
+			Fat32BootSector bootSector) throws LibAumsException {
 		this.fat = fat;
 		this.blockDevice = blockDevice;
 		chain = fat.getChain(startCluster);
@@ -79,7 +80,7 @@ public class ClusterChain {
 	 * @throws IOException
 	 *             If reading fails.
 	 */
-	/* package */void read(long offset, ByteBuffer dest) throws IOException {
+	/* package */void read(long offset, ByteBuffer dest) throws LibAumsException {
 		int length = dest.remaining();
 
 		int chainIndex = (int) (offset / clusterSize);
@@ -128,7 +129,7 @@ public class ClusterChain {
 	 * @throws IOException
 	 *             If writing fails.
 	 */
-	/* package */void write(long offset, ByteBuffer source) throws IOException {
+	/* package */void write(long offset, ByteBuffer source) throws LibAumsException {
 		int length = source.remaining();
 
 		int chainIndex = (int) (offset / clusterSize);
@@ -190,7 +191,7 @@ public class ClusterChain {
 	 * @see #getClusters()
 	 * @see #setLength(long)
 	 */
-	/* package */void setClusters(int newNumberOfClusters) throws IOException {
+	/* package */void setClusters(int newNumberOfClusters) throws LibAumsException {
 		int oldNumberOfClusters = getClusters();
 		if (newNumberOfClusters == oldNumberOfClusters)
 			return;
@@ -226,7 +227,7 @@ public class ClusterChain {
 	 * @see #getLength()
 	 * @see #setClusters(int)
 	 */
-	/* package */void setLength(long newLength) throws IOException {
+	/* package */void setLength(long newLength) throws LibAumsException {
 		final long newNumberOfClusters = ((newLength + clusterSize - 1) / clusterSize);
 		setClusters((int) newNumberOfClusters);
 	}

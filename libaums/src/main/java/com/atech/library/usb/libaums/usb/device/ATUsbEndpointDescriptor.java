@@ -1,4 +1,4 @@
-package com.atech.library.usb.libaums.device;
+package com.atech.library.usb.libaums.usb.device;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

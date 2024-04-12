@@ -17,6 +17,8 @@
 
 package com.github.mjdev.libaums.fs;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Closeable;
@@ -46,7 +48,7 @@ public interface UsbFile extends Closeable {
      * @return UsbFile directory or file if found, null otherwise.
      */
 	@Nullable
-	UsbFile search(@Nonnull String path) throws IOException;
+	UsbFile search(@Nonnull String path) throws LibAumsException;
 
 	/**
 	 * 
@@ -69,7 +71,7 @@ public interface UsbFile extends Closeable {
 	 *             If new name is already assigned or writing to the file system
 	 *             fails.
 	 */
-	void setName(String newName) throws IOException;
+	void setName(String newName) throws LibAumsException;
 
 	/**
 	 * Returns the time this directory or file was created.
@@ -108,7 +110,7 @@ public interface UsbFile extends Closeable {
 	 * @throws IOException
 	 *             If reading fails
 	 */
-	String[] list() throws IOException;
+	String[] list() throws LibAumsException;
 
 	/**
 	 * Lists all files in the directory. Throws an exception if called on a
@@ -119,7 +121,7 @@ public interface UsbFile extends Closeable {
 	 * @throws IOException
 	 *             If reading fails
 	 */
-	UsbFile[] listFiles() throws IOException;
+	UsbFile[] listFiles() throws LibAumsException;
 
 	/**
 	 * Returns the file length or throws an exception if called on a directory.
@@ -141,7 +143,7 @@ public interface UsbFile extends Closeable {
 	 * @throws IOException
 	 *             If requesting the needed space fails.
 	 */
-	void setLength(long newLength) throws IOException;
+	void setLength(long newLength) throws LibAumsException;
 
 	/**
 	 * Reads from a file or throws an exception if called on a directory.
@@ -153,7 +155,7 @@ public interface UsbFile extends Closeable {
 	 * @throws IOException
 	 *             If reading fails.
 	 */
-	void read(long offset, ByteBuffer destination) throws IOException;
+	void read(long offset, ByteBuffer destination) throws LibAumsException;
 
 	/**
 	 * Writes to a file or throws an exception if called on a directory.
@@ -165,7 +167,7 @@ public interface UsbFile extends Closeable {
 	 * @throws IOException
 	 *             If writing fails.
 	 */
-	void write(long offset, ByteBuffer source) throws IOException;
+	void write(long offset, ByteBuffer source) throws LibAumsException;
 
 	/**
 	 * Forces a write. Every change to the file is then committed to the disk.
@@ -174,7 +176,7 @@ public interface UsbFile extends Closeable {
 	 * @throws IOException
 	 *             If flushing fails.
 	 */
-	void flush() throws IOException;
+	void flush() throws LibAumsException;
 
 	/**
 	 * Closes and flushes the file. It is essential to close a file after making
@@ -196,7 +198,7 @@ public interface UsbFile extends Closeable {
 	 *             If writing to the disk fails or a item with the same name
 	 *             already exists.
 	 */
-	UsbFile createDirectory(String name) throws IOException;
+	UsbFile createDirectory(String name) throws LibAumsException;
 
 	/**
 	 * This methods creates a new file with the given name and returns it.
@@ -208,7 +210,7 @@ public interface UsbFile extends Closeable {
 	 *             If writing to the disk fails or a item with the same name
 	 *             already exists.
 	 */
-	UsbFile createFile(String name) throws IOException;
+	UsbFile createFile(String name) throws LibAumsException;
 
 	/**
 	 * This methods moves THIS item to the destination directory. Make sure that
@@ -224,7 +226,7 @@ public interface UsbFile extends Closeable {
 	 *             If writing fails, or the operation cannot be done (eg. item
 	 *             already exists in the destination directory)
 	 */
-	void moveTo(UsbFile destination) throws IOException;
+	void moveTo(UsbFile destination) throws LibAumsException;
 
 	/**
 	 * Deletes this file or directory from the parent directory.
@@ -232,7 +234,7 @@ public interface UsbFile extends Closeable {
 	 * @throws IOException
 	 *             If operation fails due to write errors.
 	 */
-	void delete() throws IOException;
+	void delete() throws LibAumsException;
 
 	/**
 	 *

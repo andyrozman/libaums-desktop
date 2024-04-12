@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import com.atech.library.usb.libaums.data.LibAumsException;
 import lombok.extern.slf4j.Slf4j;
 
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
@@ -66,7 +67,7 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 	 * @throws IOException
 	 *             If reading fails.
 	 */
-	private FsInfoStructure(BlockDeviceDriver blockDevice, int offset) throws IOException {
+	private FsInfoStructure(BlockDeviceDriver blockDevice, int offset) throws LibAumsException {
 		this.blockDevice = blockDevice;
 		this.offset = offset;
 		buffer = ByteBuffer.allocate(512);
@@ -77,7 +78,7 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 		if (buffer.getInt(LEAD_SIGNATURE_OFF) != LEAD_SIGNATURE
 				|| buffer.getInt(STRUCT_SIGNATURE_OFF) != STRUCT_SIGNATURE
 				|| buffer.getInt(TRAIL_SIGNATURE_OFF) != TRAIL_SIGNATURE) {
-			throw new IOException("invalid fs info structure!");
+			throw LibAumsException.createWithIOException("invalid fs info structure!");
 		}
 	}
 
@@ -93,7 +94,7 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 	 *             If reading fails.
 	 */
 	/* package */static FsInfoStructure read(BlockDeviceDriver blockDevice, int offset)
-			throws IOException {
+			throws LibAumsException {
 		return new FsInfoStructure(blockDevice, offset);
 	}
 
@@ -168,7 +169,7 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 	 * @throws IOException
 	 *             If writing to device fails.
 	 */
-	/* package */void write() throws IOException {
+	/* package */void write() throws LibAumsException {
 		log.debug( "writing to device");
 		blockDevice.write(offset, buffer);
 		buffer.clear();

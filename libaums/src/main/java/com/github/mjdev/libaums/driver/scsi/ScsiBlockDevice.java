@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 
-
+import com.atech.library.usb.libaums.data.LibAumsException;
 import com.github.mjdev.libaums.UsbCommunication;
 import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 import com.github.mjdev.libaums.driver.scsi.commands.CommandBlockWrapper;
@@ -79,7 +79,7 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 	 * @see com.github.mjdev.libaums.driver.scsi.commands.ScsiReadCapacityResponse
 	 */
 	@Override
-	public void init() throws IOException {
+	public void init() throws LibAumsException {
 		ByteBuffer inBuffer = ByteBuffer.allocate(36);
 		ScsiInquiry inquiry = new ScsiInquiry((byte) inBuffer.array().length);
 		transferCommand(inquiry, inBuffer);
@@ -89,7 +89,7 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 
 		if (inquiryResponse.getPeripheralQualifier() != 0
 				|| inquiryResponse.getPeripheralDeviceType() != 0) {
-			throw new IOException("unsupported PeripheralQualifier or PeripheralDeviceType");
+			throw LibAumsException.createWithIOException("unsupported PeripheralQualifier or PeripheralDeviceType");
 		}
 
 		ScsiTestUnitReady testUnit = new ScsiTestUnitReady();
@@ -128,7 +128,7 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 	 *             If something fails.
 	 */
 	private boolean transferCommand(CommandBlockWrapper command, ByteBuffer inBuffer)
-			throws IOException {
+			throws LibAumsException {
 		byte[] outArray = outBuffer.array();
 		outBuffer.clear();
 		Arrays.fill(outArray, (byte) 0);
@@ -149,13 +149,13 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 					int tmp = usbCommunication.bulkInTransfer(inArray, read + inBuffer.position(),
 							inBuffer.remaining() - read);
 					if (tmp == -1) {
-						throw new IOException("reading failed!");
+						throw LibAumsException.createWithIOException("reading failed!");
 					}
 					read += tmp;
 				} while (read < transferLength);
 
 				if (read != transferLength) {
-					throw new IOException("Unexpected command size (" + read + ") on response to "
+					throw LibAumsException.createWithIOException("Unexpected command size (" + read + ") on response to "
 							+ command);
 				}
 			} else {
@@ -164,13 +164,13 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 					int tmp = usbCommunication.bulkOutTransfer(inArray,
 							written + inBuffer.position(), inBuffer.remaining() - written);
 					if (tmp == -1) {
-						throw new IOException("writing failed!");
+						throw LibAumsException.createWithIOException("writing failed!");
 					}
 					written += tmp;
 				} while (written < transferLength);
 
 				if (written != transferLength) {
-					throw new IOException("Could not write all bytes: " + command);
+					throw LibAumsException.createWithIOException("Could not write all bytes: " + command);
 				}
 			}
 		}
@@ -199,7 +199,7 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 	 * the devOffset is not in bytes!
 	 */
 	@Override
-	public synchronized void read(long devOffset, ByteBuffer dest) throws IOException {
+	public synchronized void read(long devOffset, ByteBuffer dest) throws LibAumsException {
 		//long time = System.currentTimeMillis();
 		// TODO try to make this more efficient by for example only allocating
 		// blockSize and making it global
@@ -232,7 +232,7 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 	 * the devOffset is not in bytes!
 	 */
 	@Override
-	public synchronized void write(long devOffset, ByteBuffer src) throws IOException {
+	public synchronized void write(long devOffset, ByteBuffer src) throws LibAumsException {
 		//long time = System.currentTimeMillis();
 		// TODO try to make this more efficient by for example only allocating
 		// blockSize and making it global

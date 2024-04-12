@@ -1,13 +1,11 @@
-package com.atech.library.usb.libaums.device;
+package com.atech.library.usb.libaums.usb.device;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
-import org.usb4java.DescriptorUtils;
 import org.usb4java.Interface;
 import org.usb4java.InterfaceDescriptor;
 
-import javax.usb.UsbInterface;
 import java.util.ArrayList;
 import java.util.List;
 

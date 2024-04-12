@@ -1,5 +1,6 @@
 package com.atech.library.usb.libaums;
 
+import com.atech.library.usb.libaums.data.UsbMassStorageDeviceConfig;
 import com.github.mjdev.libaums.UsbCommunication;
 import org.usb4java.BufferUtils;
 import org.usb4java.DeviceHandle;
@@ -15,11 +16,11 @@ import java.nio.IntBuffer;
  */
 public class UsbDeviceCommunication implements UsbCommunication {
 
-    private final UsbDeviceSettings deviceSettings;
+    private final UsbMassStorageDeviceConfig deviceSettings;
     DeviceHandle handle;
     private static int TIMEOUT = 5000;
 
-    public UsbDeviceCommunication(UsbDeviceSettings deviceSettings) {
+    public UsbDeviceCommunication(UsbMassStorageDeviceConfig deviceSettings) {
         this.deviceSettings = deviceSettings;
         initDeviceWithLibUsb();
     }
@@ -105,7 +106,7 @@ public class UsbDeviceCommunication implements UsbCommunication {
         return bulkInTransfer(outBuffer, length);
     }
 
-    public void dispose() {
+    public void closeDevice() {
         // Release the ADB interface
         int result = LibUsb.releaseInterface(handle, deviceSettings.getInterfaceNumber());
         if (result != LibUsb.SUCCESS)
@@ -116,8 +117,8 @@ public class UsbDeviceCommunication implements UsbCommunication {
         // Close the device
         LibUsb.close(handle);
 
-        // Deinitialize the libusb context
-        LibUsb.exit(null);
+//        // Deinitialize the libusb context
+//        LibUsb.exit(null);
 
     }
 }

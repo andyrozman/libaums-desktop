@@ -39,13 +39,38 @@ There are plenty examples inside the project how to use usb4java (copied from us
 
 ### How to use (2)
 
-I added special class where you can configure what part of library you need, so you can load Block Device and/or you can load Partitions. By default we load booth, but this can be changed like this:
+I added special class where you can configure what part of library you need, so you can either load Partitions or not. By default we load partitions, but this can be disabled:
 
 ```java
 // turn off partition loading
-UsbMassStorageLibrarySettings.LOAD_PARTITIONS = false;
-// turn off block device loading
-UsbMassStorageLibrarySettings.LOAD_PARTITIONS = false;
+UsbMassStorageLibrary.LOAD_PARTITIONS = false;
+```
+
+We can get list of all applicable devices (all Mass Storage Devices that support SCSI commands (subclass 6) 
+with protocol Bulk-Only (80)):
+
+```java
+List<UsbMassStorageDeviceConfig> configs = UsbMassStorageDevice.getListOfAttachedUsbMassStorageDevices();
+```
+
+We can get all instances of UsbMassStorageDevice by calling:
+
+```java
+UsbMassStorageDevice[] list = UsbMassStorageDevice.getMassStorageDevices(); 
+```
+
+We can get specific instance if can call this, with instance of UsbMassStorageDeviceConfig: 
+
+```java
+UsbMassStorageDeviceConfig config = new UsbMassStorageDeviceConfig();
+UsbMassStorageDevice device = UsbMassStorageDevice.getMassStorageDevice(config);
+```
+
+Once we have instance we need to initialize device, which will open device and claim its interface:
+
+```java
+// see previous step 
+device.init();
 ```
 
 
