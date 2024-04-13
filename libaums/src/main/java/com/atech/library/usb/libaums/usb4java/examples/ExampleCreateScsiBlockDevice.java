@@ -27,6 +27,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
 import java.util.List;
@@ -40,7 +41,11 @@ public class ExampleCreateScsiBlockDevice {
     public ExampleCreateScsiBlockDevice() {
         String PATTERN = "%d{HH:mm:ss,SSS} %5p [%c{1}:%L] - %m%n";
         UsbMassStorageLibrary.LOAD_PARTITIONS = false;
-        createConsoleAppender(Level.ALL, PATTERN);
+        //createConsoleAppender(Level.ALL, PATTERN);
+        Logger.getRootLogger().removeAllAppenders();
+        Logger.getRootLogger().addAppender(createConsoleAppender(Level.ALL, PATTERN));
+        Logger.getLogger("com").setLevel(Level.DEBUG);
+        Logger.getLogger("github").setLevel(Level.DEBUG);
     }
 
     public static ConsoleAppender createConsoleAppender(Level threshold, String pattern) {
@@ -144,9 +149,9 @@ public class ExampleCreateScsiBlockDevice {
     public static void main(String[] args) {
 
         ExampleCreateScsiBlockDevice flexi = new ExampleCreateScsiBlockDevice();
-        //flexi.connectToVerio();
+        flexi.connectToVerio();
         //flexi.findDevice();
-        flexi.readMicroSDreader();
+        //flexi.readMicroSDreader();
 
         flexi.dispose();
     }

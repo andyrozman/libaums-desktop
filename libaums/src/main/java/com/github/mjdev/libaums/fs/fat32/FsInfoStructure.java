@@ -51,8 +51,6 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 	private static int STRUCT_SIGNATURE = 0x61417272;
 	private static int TRAIL_SIGNATURE = 0xAA550000;
 
-	private static final String TAG = FsInfoStructure.class.getSimpleName();
-
 	private int offset;
 	private BlockDeviceDriver blockDevice;
 	private ByteBuffer buffer;

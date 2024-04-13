@@ -56,8 +56,6 @@ public class CommandStatusWrapper {
 	 */
 	public static final int SIZE = 13;
 
-	private static final String TAG = CommandStatusWrapper.class.getSimpleName();
-
 	private static final int D_CSW_SIGNATURE = 0x53425355;
 
 	private int dCswSignature;

@@ -49,8 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ScsiBlockDevice implements BlockDeviceDriver {
 
-	private static final String TAG = ScsiBlockDevice.class.getSimpleName();
-
 	private UsbCommunication usbCommunication;
 	private ByteBuffer outBuffer;
 	private byte[] cswBuffer;

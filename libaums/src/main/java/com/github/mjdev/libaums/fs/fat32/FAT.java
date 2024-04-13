@@ -47,8 +47,6 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 @Slf4j
 public class FAT {
 
-	private static final String TAG = FAT.class.getSimpleName();
-
 	/**
 	 * End of file / chain marker. This is used to determine when following a
 	 * cluster chain should be stopped. (Last allocated cluster has been found.)

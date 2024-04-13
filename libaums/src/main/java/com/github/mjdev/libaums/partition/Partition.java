@@ -42,8 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Partition implements BlockDeviceDriver {
 
-	private static final String TAG = Partition.class.getSimpleName();
-
 	// private PartitionTableEntry partitionTableEntry;
 	private BlockDeviceDriver blockDevice;
 	/**

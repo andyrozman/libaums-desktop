@@ -37,8 +37,6 @@ import com.github.mjdev.libaums.driver.BlockDeviceDriver;
 @Slf4j
 public class ClusterChain {
 
-	private static final String TAG = ClusterChain.class.getSimpleName();
-
 	private BlockDeviceDriver blockDevice;
 	private FAT fat;
 	private Long[] chain;
