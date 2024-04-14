@@ -21,6 +21,7 @@ import com.atech.library.usb.libaums.data.LibAumsException;
 import com.atech.library.usb.libaums.data.UsbMassStorageDeviceConfig;
 import com.atech.library.usb.libaums.UsbMassStorageLibrary;
 import com.github.mjdev.libaums.UsbCommunication;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.usb4java.*;
 
@@ -36,6 +37,7 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
 
     private static final int TRANSFER_TIMEOUT = 5000; // 21000
     DeviceHandle deviceHandle;
+    @Getter
     UsbMassStorageDeviceConfig deviceConfig;
     boolean deviceIsOpenAndClaimed = false;
 
@@ -50,7 +52,7 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
             return;
         }
 
-        log.info("openDevice: opening {}", deviceConfig.getReadableDeviceId());
+        log.debug("openDevice: opening {}", deviceConfig.getReadableDeviceId());
         Context context = UsbMassStorageLibrary.initLibrary();
 
         // Open device
@@ -86,7 +88,6 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
             if (result3 != LibUsb.SUCCESS) {
                 throw LibAumsException.createWithLibUsbException("Unable to claim interface even after detaching kernel.", result3);
             }
-
         }
 
         log.info("openDevice: Device {} opened and interface {} claimed.", deviceConfig.getReadableDeviceId(), deviceConfig.getInterfaceNumber());
@@ -96,7 +97,8 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
 
     @Override
     public int bulkOutTransfer(byte[] data, int length) throws LibAumsException {
-        log.debug("bulkOutTransfer (data={},length={})", data, length);
+
+        log.debug("bulkOutTransfer (data={},length={})", getAsHex(data), length);
 
         ByteBuffer buffer = BufferUtils.allocateByteBuffer(data.length);
         buffer.put(data);
@@ -120,7 +122,7 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
             return bulkOutTransfer(data, length);
         }
 
-        log.debug("bulkOutTransfer(offset): (data={},length={},offset={})", data, length, offset);
+        log.debug("bulkOutTransfer(offset): (data={},length={},offset={})", getAsHex(data), length, offset);
 
         int remaining = length-offset;
         byte[] newData = new byte[length-offset];
@@ -167,7 +169,7 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
             buffer.get(data);
         }
 
-        log.debug("bulkInTransfer: Data Returned: {}", data);
+        log.debug("bulkInTransfer: Data returned: {}", getAsHex(data));
 
         return transferredCount;
     }
@@ -200,7 +202,7 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
             buffer.get(data, offset, length);
         }
 
-        log.debug("bulkInTransfer(offset): Data Returned: {}", data);
+        log.debug("bulkInTransfer(offset): Data returned: {}", getAsHex(data));
 
         return transferredCount;
     }
@@ -211,7 +213,7 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
             log.warn("closeDevice: device {} is already closed. Exiting.", deviceConfig.getReadableDeviceId());
             return;
         }
-        log.info("closeDevice: closing device {}", deviceConfig.getReadableDeviceId());
+        log.debug("closeDevice: closing device {}", deviceConfig.getReadableDeviceId());
 
         if (deviceIsOpenAndClaimed) {
             // Release interface
@@ -226,5 +228,17 @@ public class Usb4JavaUsbDeviceCommunication implements UsbCommunication {
         LibUsb.close(deviceHandle);
         log.info("closeDevice: device {} closed and interface released", deviceConfig.getReadableDeviceId());
         deviceHandle = null;
+    }
+
+    private String getAsHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("0x%02X ", b));
+        }
+        return sb.toString();
+    }
+
+    public String getReadableDeviceName() {
+        return this.deviceConfig.getReadableDeviceId();
     }
 }

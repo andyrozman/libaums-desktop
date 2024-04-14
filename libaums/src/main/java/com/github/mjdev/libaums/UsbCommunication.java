@@ -92,4 +92,10 @@ public interface UsbCommunication {
 	 * @see #bulkInTransfer(byte[], int)
 	 */
 	public int bulkInTransfer(byte[] buffer, int offset, int length) throws LibAumsException;
+
+	/**
+	 * Returns readable device name in form xxxx:yyyy (needed just for information purposes)
+	 * @return
+	 */
+	String getReadableDeviceName();
 }

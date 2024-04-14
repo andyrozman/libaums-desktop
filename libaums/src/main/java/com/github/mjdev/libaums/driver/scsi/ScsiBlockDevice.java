@@ -83,7 +83,7 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 		transferCommand(inquiry, inBuffer);
 		// TODO support multiple luns!
 		ScsiInquiryResponse inquiryResponse = ScsiInquiryResponse.read(inBuffer);
-		log.debug( "inquiry response: " + inquiryResponse);
+		log.debug("inquiry response: " + inquiryResponse);
 
 		if (inquiryResponse.getPeripheralQualifier() != 0
 				|| inquiryResponse.getPeripheralDeviceType() != 0) {
@@ -101,8 +101,8 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 		blockSize = readCapacityResponse.getBlockLength();
 		lastBlockAddress = readCapacityResponse.getLogicalBlockAddress();
 
-		log.info( "Block size: " + blockSize);
-		log.info( "Last block address: " + lastBlockAddress);
+		log.debug("Block size: " + blockSize);
+		log.debug("Last block address: " + lastBlockAddress);
 	}
 
 	/**
@@ -203,7 +203,7 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 		// blockSize and making it global
 		ByteBuffer buffer;
 		if (dest.remaining() % blockSize != 0) {
-			log.warn( "we have to round up size to next block sector");
+			log.debug("WARNING: we have to round up size to next block sector");
 			int rounded = blockSize - dest.remaining() % blockSize + dest.remaining();
 			buffer = ByteBuffer.allocate(rounded);
 			buffer.limit(rounded);
@@ -236,7 +236,7 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 		// blockSize and making it global
 		ByteBuffer buffer;
 		if (src.remaining() % blockSize != 0) {
-			log.warn( "we have to round up size to next block sector");
+			log.debug("WARNING: we have to round up size to next block sector");
 			int rounded = blockSize - src.remaining() % blockSize + src.remaining();
 			buffer = ByteBuffer.allocate(rounded);
 			buffer.limit(rounded);
@@ -257,5 +257,12 @@ public class ScsiBlockDevice implements BlockDeviceDriver {
 	@Override
 	public int getBlockSize() {
 		return blockSize;
+	}
+
+	public String toString() {
+		return String.format("ScsiBlockDevice [device=%s,blockSize=%d,lastBlockAddress=%d]",
+			this.usbCommunication.getReadableDeviceName(),
+			blockSize,
+			lastBlockAddress);
 	}
 }

@@ -22,18 +22,18 @@ You can find original disclaimer little bit down the page. My contribution is so
 The library can be included into your project like this: 
 
 ```
-  <repositories>
-		<repository>
-		    <id>jitpack.io</id>
-		    <url>https://jitpack.io</url>
-		</repository>
-	</repositories>
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
 
-	<dependency>
-	    <groupId>com.atech-software</groupId>
-	    <artifactId>libaums-usb4java</artifactId>
-	    <version>Tag</version>
-	</dependency>
+<dependency>
+    <groupId>com.atech-software</groupId>
+    <artifactId>libaums-usb4java</artifactId>
+    <version>Tag</version>
+</dependency>
 ```
 There are plenty examples inside the project how to use usb4java (copied from usb4java samples), and I will add some examples on how to use library itself, as soon as I am so far.
 
@@ -86,16 +86,49 @@ device.close();
 When we are done with library we need to call this, to dispose of LibUsb instance (instance is created automatically, but needs to be disposed manually):
 
 ```java
-UsbMassStorageLibrary.
+UsbMassStorageLibrary.disposeLibrary()
+```
+
+If you intend to work with SCSI (only part that I tested so far, although everything else should work):
+
+```java
+
+ScsiBlockDevice blockDevice = device.getBlockDevice();
+
+// when writing to device we have to know where to write (3=would be what some would asume lba3)
+long deviceOffset = 3; 
+
+// write to block device (createPacket() will be your method that creates packet you wish to send)
+byte[] packet = createPacket();  
+        
+blockDevice.write(deviceOffset, buffer);
+
+// read from block device (in this case expected answer is 10 bytes
+ByteBuffer readBuffer = ByteBuffer.allocate(10);
+
+blockDevice.read(deviceOffset, readBuffer);
+
+```
+
+You can see some basic examples in ExampleCreateScsiBlockDevice.
+
+### Logging
+
+Library has Slf4j (Simple Log Framework for Java) integrated. I would recommend that you enable following packages for DEBUG while you are developing, but turn them to INFO for production systems and set your own logging to follow slf4j.
+
+```
+com.atech.library.usb.libaums=DEBUG
+com.github.mjdev.libaums=DEBUG
 ```
 
 
 ### Status
 
-Just started on this project in April 2024, and it will take me some time to get it to working state. 
+This project was extended and changed (to usb4java), so everything that worked in original project should work here. 
+I have tested SCSI block reading and writing and it works, so 1st release (0.4.0) should be fully working. If you find something wrong open Issue or in worst case scenario fix it and create PR and I will merge it (if I think its OK) and make new release. 
 
-
-
+There is no plans at the moment to add extensions that were introduced in magnusja/libaums, although I started some work on that in next_gen branch.  
+ 
 
 
 ### Original README 

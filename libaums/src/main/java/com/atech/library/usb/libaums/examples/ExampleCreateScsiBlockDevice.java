@@ -15,7 +15,7 @@
  *
  */
 
-package com.atech.library.usb.libaums.usb4java.examples;
+package com.atech.library.usb.libaums.examples;
 
 
 import com.atech.library.usb.libaums.UsbMassStorageLibrary;
@@ -41,11 +41,10 @@ public class ExampleCreateScsiBlockDevice {
     public ExampleCreateScsiBlockDevice() {
         String PATTERN = "%d{HH:mm:ss,SSS} %5p [%c{1}:%L] - %m%n";
         UsbMassStorageLibrary.LOAD_PARTITIONS = false;
-        //createConsoleAppender(Level.ALL, PATTERN);
         Logger.getRootLogger().removeAllAppenders();
         Logger.getRootLogger().addAppender(createConsoleAppender(Level.ALL, PATTERN));
-        Logger.getLogger("com").setLevel(Level.DEBUG);
-        Logger.getLogger("github").setLevel(Level.DEBUG);
+        Logger.getLogger("com.atech.library.usb.libaums").setLevel(Level.DEBUG);
+        Logger.getLogger("com.github.mjdev.libaums").setLevel(Level.DEBUG);
     }
 
     public static ConsoleAppender createConsoleAppender(Level threshold, String pattern) {
@@ -74,8 +73,12 @@ public class ExampleCreateScsiBlockDevice {
         }
     }
 
+    /**
+     * This is short example how to read data from Glucose Meter
+     */
     @SneakyThrows
-    public void connectToVerio() {
+    public void connectToOneTouchVerio() {
+        // TODO extend a little
         UsbMassStorageDevice massStorageDevice = null;
         try {
             UsbMassStorageDeviceConfig config = UsbMassStorageDeviceConfig.builder()
@@ -149,7 +152,7 @@ public class ExampleCreateScsiBlockDevice {
     public static void main(String[] args) {
 
         ExampleCreateScsiBlockDevice flexi = new ExampleCreateScsiBlockDevice();
-        flexi.connectToVerio();
+        //flexi.connectToVerio();
         //flexi.findDevice();
         //flexi.readMicroSDreader();
 

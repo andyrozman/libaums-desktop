@@ -213,18 +213,22 @@ public class UsbMassStorageDevice {
 	}
 
 	public static List<UsbMassStorageDeviceConfig> getListOfAttachedUsbMassStorageDevices() throws LibAumsException {
+		return getListOfAttachedUsbMassStorageDevices(null, null);
+	}
 
+	public static List<UsbMassStorageDeviceConfig> getListOfAttachedUsbMassStorageDevices(Integer filterVendor, Integer filterProduct) throws LibAumsException {
+        // TODO add filtering
 		List<UsbMassStorageDeviceConfig> outList = new ArrayList<>();
 
 		List<ATUsbDevice> deviceList = Usb4JavaManager.getDeviceList();
 
 		for (ATUsbDevice device : deviceList) {
-			log.info("found usb device: " + device);
+			log.debug("Found usb device: " + device);
 
 			//int interfaceCount = device.getInterfaceCount();
 			//for (int i = 0; i < interfaceCount; i++) {
 			ATUsbInterface usbInterfaceRoot = device.getInterface(0); //read mass storage not HID interface. HID interface is 1
-			log.info( "found usb interface: " + usbInterfaceRoot);
+			//log.debug("found usb interface: " + usbInterfaceRoot);
 
 			for (ATUsbInterfaceDescriptor usbInterface : usbInterfaceRoot.altsettings()) {
 
@@ -233,7 +237,7 @@ public class UsbMassStorageDevice {
 				if (usbInterface.bInterfaceClass() != USB_CLASS_MASS_STORAGE ||
 					usbInterface.bInterfaceSubClass() != MASS_STORAGE_SUBCLASS_SCSI ||
 					usbInterface.bInterfaceProtocol() != MASS_STORAGE_PROTOCOL_BBB_BULK_ONLY) {
-					log.info("Device interface not suitable ! Found class={},subclass={},protocol={}), required=8/6/80 (Mass Storage/SCSI/Bulk-Only)",
+					log.debug("     Device interface not suitable ! Found class={},subclass={},protocol={}), required=8/6/80 (Mass Storage/SCSI/Bulk-Only)",
 							usbInterface.bInterfaceClass(),
 							usbInterface.bInterfaceSubClass(),
 							usbInterface.bInterfaceProtocol());
@@ -244,14 +248,14 @@ public class UsbMassStorageDevice {
 				// One IN and one OUT endpoint
 				int endpointCount = usbInterface.bNumEndpoints();
 				if (endpointCount != 2) {
-					log.warn("interface endpoint count != 2");
+					log.debug("     interface endpoint count != 2");
 				}
 
 				ATUsbEndpointDescriptor outEndpoint = null;
 				ATUsbEndpointDescriptor inEndpoint = null;
 				for (int j = 0; j < endpointCount; j++) {
 					ATUsbEndpointDescriptor endpoint = usbInterface.getEndpoint(j);
-					log.info( "found usb endpoint: " + endpoint);
+					log.debug("     found usb endpoint: " + endpoint);
 					if (endpoint.getTransferType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
 						if (endpoint.getDirection() == UsbConstants.USB_DIR_OUT) {
 							outEndpoint = endpoint;
@@ -262,17 +266,21 @@ public class UsbMassStorageDevice {
 				}
 
 				if (outEndpoint == null || inEndpoint == null) {
-					log.error("Not all needed endpoints found!");
+					log.debug("     Not all needed endpoints found!");
 					continue;
 				}
 
-				outList.add(UsbMassStorageDeviceConfig.builder()
-								.vendorId(device.getUsbDeviceDescriptor().idVendor())
-								.productId(device.getUsbDeviceDescriptor().idProduct())
-								.interfaceNumber(usbInterface.bInterfaceNumber())
-								.inEndpointAddress(inEndpoint.bEndpointAddress())
-								.outEndpointAddress(outEndpoint.bEndpointAddress())
-						.build());
+				UsbMassStorageDeviceConfig config = UsbMassStorageDeviceConfig.builder()
+						.vendorId(device.getUsbDeviceDescriptor().idVendor())
+						.productId(device.getUsbDeviceDescriptor().idProduct())
+						.interfaceNumber(usbInterface.bInterfaceNumber())
+						.inEndpointAddress(inEndpoint.bEndpointAddress())
+						.outEndpointAddress(outEndpoint.bEndpointAddress())
+						.build();
+
+				log.info("    Device is relevant: {}", config.getReadableDeviceId());
+
+				outList.add(config);
 			}
 		}
 
@@ -306,18 +314,18 @@ public class UsbMassStorageDevice {
 	 * @see #init()
 	 */
 	private void setupDevice() throws LibAumsException {
-		log.info("Init device {}", usbMassStorageDeviceConfig.getReadableDeviceId());
+		log.debug("Init device {}", usbMassStorageDeviceConfig.getReadableDeviceId());
 		communication = new Usb4JavaUsbDeviceCommunication(this.usbMassStorageDeviceConfig);
 		communication.openDevice();
 
 		this.connectedToDevice = true;
 
-		log.info("Create Block Device for {}", usbMassStorageDeviceConfig.getReadableDeviceId());
+		log.debug("Create Block Device for {}", usbMassStorageDeviceConfig.getReadableDeviceId());
 		blockDevice = BlockDeviceDriverFactory.createBlockDevice(communication);
 		blockDevice.init();
 
 		if (loadPartitionTable) {
-			log.info("Create Partition Table for {}", usbMassStorageDeviceConfig.getReadableDeviceId());
+			log.debug("Create Partition Table for {}", usbMassStorageDeviceConfig.getReadableDeviceId());
 			partitionTable = PartitionTableFactory.createPartitionTable(blockDevice);
 			initPartitions();
 		}
