@@ -71,88 +71,6 @@ import static com.atech.library.usb.libaums.data.UsbConstants.*;
 @Slf4j
 public class UsbMassStorageDevice {
 
-	/**
-	 * Usb communication which uses the newer API in Android Jelly Bean MR2 (API
-	 * level 18). It just delegates the calls to the {@link UsbDeviceConnection}
-	 * .
-	 * 
-	 * @author mjahnen
-	 * 
-	 */
-//	@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-//	private class JellyBeanMr2Communication implements UsbCommunication {
-//		@Override
-//		public int bulkOutTransfer(byte[] buffer, int length) {
-//			return deviceConnection.bulkTransfer(outEndpoint, buffer, length, TRANSFER_TIMEOUT);
-//		}
-//
-//		@Override
-//		public int bulkOutTransfer(byte[] buffer, int offset, int length) {
-//			return deviceConnection.bulkTransfer(outEndpoint, buffer, offset, length,
-//					TRANSFER_TIMEOUT);
-//		}
-//
-//		@Override
-//		public int bulkInTransfer(byte[] buffer, int length) {
-//			return deviceConnection.bulkTransfer(inEndpoint, buffer, length, TRANSFER_TIMEOUT);
-//		}
-//
-//		@Override
-//		public int bulkInTransfer(byte[] buffer, int offset, int length) {
-//			return deviceConnection.bulkTransfer(inEndpoint, buffer, offset, length,
-//					TRANSFER_TIMEOUT);
-//		}
-//	}
-
-	/**
-	 * On Android API level lower 18 (Jelly Bean MR2) we cannot specify a start
-	 * offset in the source/destination array. Because of that we have to use
-	 * this workaround, where we have to copy the data every time offset is non
-	 * zero.
-	 * 
-	 * @author mjahnen
-	 * 
-	 */
-//	private class HoneyCombMr1Communication implements UsbCommunication {
-//		@Override
-//		public int bulkOutTransfer(byte[] buffer, int length) {
-//			return deviceConnection.bulkTransfer(outEndpoint, buffer, length, TRANSFER_TIMEOUT);
-//		}
-//
-//		@Override
-//		public int bulkOutTransfer(byte[] buffer, int offset, int length) {
-//			if (offset == 0)
-//				return deviceConnection.bulkTransfer(outEndpoint, buffer, length, TRANSFER_TIMEOUT);
-//
-//			byte[] tmpBuffer = new byte[length];
-//			System.arraycopy(buffer, offset, tmpBuffer, 0, length);
-//			return deviceConnection.bulkTransfer(outEndpoint, tmpBuffer, length,
-//					TRANSFER_TIMEOUT);
-//		}
-//
-//		@Override
-//		public int bulkInTransfer(byte[] buffer, int length) {
-//			return deviceConnection.bulkTransfer(inEndpoint, buffer, length, TRANSFER_TIMEOUT);
-//		}
-//
-//		@Override
-//		public int bulkInTransfer(byte[] buffer, int offset, int length) {
-//			if (offset == 0)
-//				return deviceConnection.bulkTransfer(inEndpoint, buffer, length, TRANSFER_TIMEOUT);
-//
-//			byte[] tmpBuffer = new byte[length];
-//			int result = deviceConnection.bulkTransfer(inEndpoint, tmpBuffer, length,
-//					TRANSFER_TIMEOUT);
-//			System.arraycopy(tmpBuffer, 0, buffer, offset, length);
-//			return result;
-//		}
-//	}
-
-
-
-	private static int TRANSFER_TIMEOUT = 21000;
-
-
 	UsbMassStorageDeviceConfig usbMassStorageDeviceConfig;
 
 	@Getter
@@ -163,7 +81,7 @@ public class UsbMassStorageDevice {
 	// this two parameters will be overwritten with values
 	private boolean loadPartitionTable = true;
 
-	Usb4JavaUsbDeviceCommunication communication;
+	private Usb4JavaUsbDeviceCommunication communication;
 	private boolean connectedToDevice;
 
 	/**
@@ -299,7 +217,6 @@ public class UsbMassStorageDevice {
 	}
 
 
-
 	/**
 	 * Initializes the mass storage device and determines different things like
 	 * for example the MBR or the file systems for the different partitions.
@@ -340,8 +257,6 @@ public class UsbMassStorageDevice {
 			partitionTable = PartitionTableFactory.createPartitionTable(blockDevice);
 			initPartitions();
 		}
-
-
 	}
 
 	/**
@@ -383,17 +298,6 @@ public class UsbMassStorageDevice {
 	public List<Partition> getPartitions() {
 		return partitions;
 	}
-
-	/**
-	 * This returns the @link android.hardware.usb.UsbDevice which can be used
-	 * to request permission for communication.
-	 * 
-	 // @return Underlying @link android.hardware.usb.UsbDevice used for
-	 *         communication.
-	 */
-//	public UsbDevice getUsbDevice() {
-//		return usbDevice;
-//	}
 
 
 }
