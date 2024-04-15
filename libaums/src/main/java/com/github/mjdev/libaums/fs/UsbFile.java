@@ -19,8 +19,6 @@ package com.github.mjdev.libaums.fs;
 
 import com.atech.library.usb.libaums.data.LibAumsException;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -47,8 +45,7 @@ public interface UsbFile extends Closeable {
      * @param path The path to the resource to search.
      * @return UsbFile directory or file if found, null otherwise.
      */
-	@Nullable
-	UsbFile search(@Nonnull String path) throws LibAumsException;
+	UsbFile search(String path) throws LibAumsException;
 
 	/**
 	 * 

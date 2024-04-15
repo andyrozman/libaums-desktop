@@ -20,7 +20,6 @@ package com.github.mjdev.libaums.fs;
 
 import com.atech.library.usb.libaums.data.LibAumsException;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -33,7 +32,7 @@ public class UsbFileOutputStream extends OutputStream {
     private UsbFile file;
     private int currentByteOffset = 0;
 
-    public UsbFileOutputStream(@Nonnull UsbFile file) {
+    public UsbFileOutputStream(UsbFile file) {
 
         if(file.isDirectory()) {
             throw new RuntimeException("UsbFileOutputStream cannot be created on directory!");

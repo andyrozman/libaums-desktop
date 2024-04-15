@@ -32,7 +32,7 @@ The library can be included into your project like this:
 <dependency>
     <groupId>com.atech-software</groupId>
     <artifactId>libaums-usb4java</artifactId>
-    <version>Tag</version>
+    <version>0.4.0</version>
 </dependency>
 ```
 There are plenty examples inside the project how to use usb4java (copied from usb4java samples), and I will add some examples on how to use library itself, as soon as I am so far.
@@ -52,6 +52,13 @@ with protocol Bulk-Only (80)):
 ```java
 List<UsbMassStorageDeviceConfig> configs = UsbMassStorageDevice.getListOfAttachedUsbMassStorageDevices();
 ```
+
+There is also one additional method here where you can filter by either idVendorString(s) (must be uppercase) or idProductString(s). Inputs are Sets 
+
+```java
+List<UsbMassStorageDeviceConfig> configs = UsbMassStorageDevice.getListOfAttachedUsbMassStorageDevices((Sets.newHashSet("27A6"), null));
+```
+
 
 We can get all instances of UsbMassStorageDevice by calling:
 
@@ -111,6 +118,7 @@ blockDevice.read(deviceOffset, readBuffer);
 ```
 
 You can see some basic examples in ExampleCreateScsiBlockDevice.
+
 
 ### Logging
 

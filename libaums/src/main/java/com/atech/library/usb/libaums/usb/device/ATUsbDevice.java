@@ -66,21 +66,17 @@ public class ATUsbDevice implements javax.usb.UsbDevice {
     }
 
     @Override
-    public String getManufacturerString() throws UsbException, UnsupportedEncodingException, UsbDisconnectedException {
+    public String getManufacturerString() {
         return this.descriptor.manufacturer();
     }
 
-//    private ATUsbDeviceDescriptor getMyDescriptor() {
-//        return (ATUsbDeviceDescriptor)this.getUsbDeviceDescriptor();
-//    }
-
     @Override
-    public String getSerialNumberString() throws UsbException, UnsupportedEncodingException, UsbDisconnectedException {
+    public String getSerialNumberString() {
         return this.descriptor.serialNumber;
     }
 
     @Override
-    public String getProductString() throws UsbException, UnsupportedEncodingException, UsbDisconnectedException {
+    public String getProductString() {
         return this.descriptor.product;
     }
 
@@ -199,5 +195,20 @@ public class ATUsbDevice implements javax.usb.UsbDevice {
         return toLsUsbString();
     }
 
+    public String getReadableId() {
+        return String.format("%04x:%04x", this.descriptor.idVendor, this.descriptor.idProduct);
+    }
+
+    public String getManufacturerAndProductName() {
+        return this.descriptor.manufacturer + " " + this.descriptor.product;
+    }
+
+    public String getVendorId() {
+        return String.format("%04x", this.descriptor.idVendor);
+    }
+
+    public String getProductId() {
+        return String.format("%04x", this.descriptor.idProduct);
+    }
 
 }

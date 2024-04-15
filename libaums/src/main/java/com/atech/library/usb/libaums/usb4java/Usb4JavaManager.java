@@ -139,7 +139,7 @@ public class Usb4JavaManager {
             // Dump port number if available
             int portNumber = LibUsb.getPortNumber(device);
             if (portNumber != 0) {
-                log.info("Connected to port: " + portNumber);
+                log.debug("Connected to port: " + portNumber);
                 usbDevice.portNumber(portNumber);
             }
 
@@ -164,7 +164,7 @@ public class Usb4JavaManager {
         }
 
         usbDevice.descriptor(deviceDescriptor);
-        log.info(String.format("Bus %03d, Device %03d: Vendor %04x, Product %04x%n",
+        log.info(String.format("Bus %03d, Device %03d: Vendor %04x, Product %04x",
                 usbDevice.busNumber(), usbDevice.address(), descriptor.idVendor(),
                 descriptor.idProduct()));
 

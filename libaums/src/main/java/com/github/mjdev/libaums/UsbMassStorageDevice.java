@@ -21,16 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-//import android.annotation.TargetApi;
-//import android.content.Context;
-//import android.hardware.usb.UsbConstants;
-//import android.hardware.usb.UsbDevice;
-//import android.hardware.usb.UsbDeviceConnection;
-//import android.hardware.usb.UsbEndpoint;
-//import android.hardware.usb.UsbInterface;
-//import android.hardware.usb.UsbManager;
-//import android.os.Build;
 import com.atech.library.usb.libaums.UsbMassStorageLibrary;
 import com.atech.library.usb.libaums.data.LibAumsException;
 import com.atech.library.usb.libaums.data.UsbConstants;
@@ -216,14 +208,33 @@ public class UsbMassStorageDevice {
 		return getListOfAttachedUsbMassStorageDevices(null, null);
 	}
 
-	public static List<UsbMassStorageDeviceConfig> getListOfAttachedUsbMassStorageDevices(Integer filterVendor, Integer filterProduct) throws LibAumsException {
-        // TODO add filtering
+	/**
+	 * getListOfAttachedUsbMassStorageDevices() filtered with vendor or product (if both are null no filtering will be done)
+	 * @param filterVendor - Set of Vendors as String (in uppercase letter, so something like 3344 or 1D6B)
+	 * @param filterProduct - Set of Products as String (uppercase)
+	 * @return
+	 * @throws LibAumsException
+	 */
+	public static List<UsbMassStorageDeviceConfig> getListOfAttachedUsbMassStorageDevices(Set<String> filterVendor,
+																						  Set<String> filterProduct) throws LibAumsException {
 		List<UsbMassStorageDeviceConfig> outList = new ArrayList<>();
 
 		List<ATUsbDevice> deviceList = Usb4JavaManager.getDeviceList();
 
 		for (ATUsbDevice device : deviceList) {
-			log.debug("Found usb device: " + device);
+			log.debug("Found usb device: {} - {}", device.getReadableId() , device.getManufacturerAndProductName());
+
+			if (filterVendor!=null || filterProduct!=null) {
+				if (filterVendor!=null && !filterVendor.contains(device.getVendorId())) {
+					log.debug("    Device filtered out.");
+					continue;
+				}
+
+				if (filterProduct!=null && !filterProduct.contains(device.getProductId())) {
+					log.debug("    Device filtered out.");
+					continue;
+				}
+			}
 
 			//int interfaceCount = device.getInterfaceCount();
 			//for (int i = 0; i < interfaceCount; i++) {
@@ -237,7 +248,7 @@ public class UsbMassStorageDevice {
 				if (usbInterface.bInterfaceClass() != USB_CLASS_MASS_STORAGE ||
 					usbInterface.bInterfaceSubClass() != MASS_STORAGE_SUBCLASS_SCSI ||
 					usbInterface.bInterfaceProtocol() != MASS_STORAGE_PROTOCOL_BBB_BULK_ONLY) {
-					log.debug("     Device interface not suitable ! Found class={},subclass={},protocol={}), required=8/6/80 (Mass Storage/SCSI/Bulk-Only)",
+					log.debug("    Device interface not suitable ! Found class={},subclass={},protocol={}), required=8/6/80 (Mass Storage/SCSI/Bulk-Only)",
 							usbInterface.bInterfaceClass(),
 							usbInterface.bInterfaceSubClass(),
 							usbInterface.bInterfaceProtocol());
@@ -248,14 +259,14 @@ public class UsbMassStorageDevice {
 				// One IN and one OUT endpoint
 				int endpointCount = usbInterface.bNumEndpoints();
 				if (endpointCount != 2) {
-					log.debug("     interface endpoint count != 2");
+					log.debug("    Interface endpoint count != 2");
 				}
 
 				ATUsbEndpointDescriptor outEndpoint = null;
 				ATUsbEndpointDescriptor inEndpoint = null;
 				for (int j = 0; j < endpointCount; j++) {
 					ATUsbEndpointDescriptor endpoint = usbInterface.getEndpoint(j);
-					log.debug("     found usb endpoint: " + endpoint);
+					log.debug("    Found usb endpoint: " + endpoint);
 					if (endpoint.getTransferType() == UsbConstants.USB_ENDPOINT_XFER_BULK) {
 						if (endpoint.getDirection() == UsbConstants.USB_DIR_OUT) {
 							outEndpoint = endpoint;
@@ -266,7 +277,7 @@ public class UsbMassStorageDevice {
 				}
 
 				if (outEndpoint == null || inEndpoint == null) {
-					log.debug("     Not all needed endpoints found!");
+					log.debug("    Not all needed endpoints found!");
 					continue;
 				}
 
@@ -278,7 +289,7 @@ public class UsbMassStorageDevice {
 						.outEndpointAddress(outEndpoint.bEndpointAddress())
 						.build();
 
-				log.info("    Device is relevant: {}", config.getReadableDeviceId());
+				log.info("Found relevant usb device: {} - {}", device.getReadableId() , device.getManufacturerAndProductName());
 
 				outList.add(config);
 			}
