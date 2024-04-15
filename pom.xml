@@ -4,21 +4,17 @@
     <groupId>com.atech-software.libaums-usb4java</groupId>
     <name>libaums-usb4java-root</name>
     <artifactId>libaums-usb4java-root</artifactId>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>0.4.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <dependencyManagement>
         <dependencies>
-
             <dependency>
                 <groupId>com.atech-software.libaums-usb4java</groupId>
                 <artifactId>libaums-usb4java</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
         </dependencies>
-
-
     </dependencyManagement>
 
 

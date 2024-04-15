@@ -30,6 +30,8 @@ public class UsbMassStorageDeviceConfig {
     private byte inEndpointAddress;
     private byte outEndpointAddress;
     private String readableDeviceId;
+    private String manufacturer;
+    private String product;
 
     public String vendorIdAsString() {
         return String.format("%04x", vendorId);

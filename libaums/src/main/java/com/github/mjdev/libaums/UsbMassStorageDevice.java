@@ -205,6 +205,8 @@ public class UsbMassStorageDevice {
 						.interfaceNumber(usbInterface.bInterfaceNumber())
 						.inEndpointAddress(inEndpoint.bEndpointAddress())
 						.outEndpointAddress(outEndpoint.bEndpointAddress())
+						.manufacturer(device.getManufacturerString())
+						.product(device.getProductString())
 						.build();
 
 				log.info("Found relevant usb device: {} - {}", device.getReadableId() , device.getManufacturerAndProductName());
